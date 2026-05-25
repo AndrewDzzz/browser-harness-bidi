@@ -5,15 +5,20 @@ Connect an LLM directly to a real browser with a thin, editable **WebDriver BiDi
 One WebSocket to a WebDriver BiDi browser, one tiny daemon, one editable helper workspace. The agent writes what is missing during execution. The harness improves itself every run.
 
 ```text
-  * agent: wants to operate a Firefox page
+  * agent: needs browser state or an action
   |
-  * browser-harness-bidi -> WebDriver BiDi -> Firefox / Chrome driver
+  * browser-harness-bidi helpers
   |
-  * agent-workspace/agent_helpers.py -> helper missing
-  |                                      + custom helper
+  * WebDriver BiDi WebSocket
   |
-  ✓ task completed
+  * WebDriver-capable browser
+      - Firefox via geckodriver
+      - Chrome via ChromeDriver BiDi
+  |
+  ✓ page inspected, clicked, typed, extracted, or captured
 ```
+
+When a task needs a reusable helper that does not belong in the core package, the agent can add it to `agent-workspace/agent_helpers.py` and use it in the next run.
 
 **BiDi is not a stealth layer. It is the standard automation layer.** Standard WebDriver BiDi may expose `navigator.webdriver`. This project is about correct, future-facing browser control, not hiding automation.
 

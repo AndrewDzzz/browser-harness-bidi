@@ -1,6 +1,6 @@
 # Forms and input
 
-Use user-like BiDi actions first. Use DOM reads when selectors are stable.
+Use user-like bidi actions first. Use DOM reads when selectors are stable.
 
 ## Fill and submit
 

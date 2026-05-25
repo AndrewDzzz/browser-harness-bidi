@@ -1,4 +1,4 @@
-"""Small WebDriver BiDi WebSocket client."""
+"""Small WebDriver bidi WebSocket client."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ class BiDiClient:
 
     async def send(self, method: str, params: dict[str, Any] | None = None, timeout: float | None = 60.0) -> dict[str, Any]:
         if self.ws is None:
-            raise RuntimeError("BiDi websocket is not connected")
+            raise RuntimeError("bidi websocket is not connected")
         async with self._send_lock:
             msg_id = self._next_id
             self._next_id += 1
@@ -75,7 +75,7 @@ class BiDiClient:
                     if msg.get("type") == "success":
                         fut.set_result(msg.get("result", {}))
                     elif msg.get("type") == "error":
-                        err = msg.get("error", "BiDi error")
+                        err = msg.get("error", "bidi error")
                         text = msg.get("message") or err
                         fut.set_exception(BiDiProtocolError(f"{err}: {text}", msg))
                     else:

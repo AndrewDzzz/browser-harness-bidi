@@ -1,6 +1,6 @@
 # Browser basics
 
-Reusable BiDi mechanics for page state, tabs, screenshots, selectors, and viewport work.
+Reusable bidi mechanics for page state, tabs, screenshots, selectors, and viewport work.
 
 ## Screenshots
 
@@ -27,7 +27,7 @@ ensure_real_tab()
 close_tab()
 ```
 
-BiDi uses browsing context ids and script realms.
+bidi uses browsing context ids and script realms.
 
 ## Selectors
 

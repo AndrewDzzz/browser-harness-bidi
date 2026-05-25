@@ -1,4 +1,4 @@
-"""Compatibility package for browser-harness-BiDi.
+"""Compatibility package for browser-harness-bidi.
 
 The original project exposes `browser_harness`. This fork keeps that import path
 but routes the implementation through `browser_harness_bidi`.

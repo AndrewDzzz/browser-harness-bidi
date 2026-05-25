@@ -2,7 +2,7 @@
 
 ## Network observation
 
-The daemon subscribes to common WebDriver BiDi network events when the browser supports them.
+The daemon subscribes to common WebDriver bidi network events when the browser supports them.
 
 ```python
 records = network_events()
@@ -25,7 +25,7 @@ for request in summarize_network(capture["records"]):
     print(request["method"], request["status"], request["url"])
 ```
 
-Current limit: this harness observes BiDi `network.*` events and groups metadata. Do not claim request interception unless a future helper explicitly implements a BiDi-supported interception flow.
+Current limit: this harness observes bidi `network.*` events and groups metadata. Do not claim request interception unless a future helper explicitly implements a bidi-supported interception flow.
 
 ## Storage
 

@@ -1,4 +1,4 @@
-"""WebDriver BiDi WS holder plus IPC relay. One daemon per BIDI_NAME."""
+"""WebDriver bidi WS holder plus IPC relay. One daemon per BIDI_NAME."""
 
 from __future__ import annotations
 
@@ -94,7 +94,7 @@ def _webdriver_new_session(url: str) -> dict[str, Any]:
     if not ws:
         raise RuntimeError(
             "WebDriver session did not return capabilities.webSocketUrl. "
-            "Make sure the driver/browser supports WebDriver BiDi and accepts webSocketUrl=true."
+            "Make sure the driver/browser supports WebDriver bidi and accepts webSocketUrl=true."
         )
     return {"ws": ws, "session_ready": True, "webdriver_base": base, "webdriver_session_id": value.get("sessionId")}
 
@@ -111,7 +111,7 @@ def _resolve_endpoint() -> dict[str, Any]:
         return {"ws": f"ws://{host}:{port}/session", "session_ready": False}
 
     raise RuntimeError(
-        "No BiDi endpoint configured. Set BIDI_WS for a direct BiDi WebSocket, "
+        "No bidi endpoint configured. Set BIDI_WS for a direct bidi WebSocket, "
         "or BIDI_WEBDRIVER_URL for ChromeDriver/GeckoDriver with webSocketUrl=true."
     )
 

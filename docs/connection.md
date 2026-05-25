@@ -30,7 +30,7 @@ PY
 
 `--privacy-profile` is a privacy profile, not an anti-detect profile.
 
-## Direct Firefox BiDi WebSocket
+## Direct Firefox bidi WebSocket
 
 ```bash
 firefox --remote-debugging-port 9222

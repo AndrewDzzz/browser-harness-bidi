@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "browser-harness-bidi"
 version = "0.2.0"
-description = "browser-harness-BiDi: a BiDi-first browser harness for agent-written Python."
+description = "browser-harness-bidi: a bidi-first browser harness for agent-written Python."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

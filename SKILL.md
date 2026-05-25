@@ -1,15 +1,15 @@
 ---
 name: browser-harness-bidi
-description: BiDi-first browser control for agents. Use when the user wants WebDriver BiDi, Firefox automation, or cross-browser standard browser control.
+description: bidi-first browser control for agents. Use when the user wants WebDriver bidi, Firefox automation, or cross-browser standard browser control.
 ---
 
-# browser-harness-BiDi
+# browser-harness-bidi
 
-Use `bidi-harness` or the managed `bidi-firefox` launcher for WebDriver BiDi browser control.
+Use `bidi-harness` or the managed `bidi-firefox` launcher for WebDriver bidi browser control.
 
-Compatibility note: `browser-harness` is also available in this fork and routes to the same BiDi implementation, so original Browser Harness muscle memory still works while the transport is WebDriver BiDi.
+Compatibility note: `browser-harness` is also available in this fork and routes to the same bidi implementation, so original Browser Harness muscle memory still works while the transport is WebDriver bidi.
 
-BiDi is the preferred default for Firefox and the future-facing protocol for cross-browser browser agents. It is the standard automation surface this project builds around.
+bidi is the preferred default for Firefox and the future-facing protocol for cross-browser browser agents. It is the standard automation surface this project builds around.
 
 ## Fast path
 
@@ -21,7 +21,7 @@ print(page_info())
 PY
 ```
 
-`bidi-firefox` starts geckodriver, requests a WebDriver BiDi WebSocket, runs the harness script, and cleans up the managed browser session.
+`bidi-firefox` starts geckodriver, requests a WebDriver bidi WebSocket, runs the harness script, and cleans up the managed browser session.
 
 ## Manual harness path
 
@@ -35,7 +35,7 @@ PY
 
 Set one of these before using `bidi-harness` directly:
 
-- `BIDI_WS=ws://127.0.0.1:9222/session` for a direct BiDi WebSocket, commonly Firefox remote debugging.
+- `BIDI_WS=ws://127.0.0.1:9222/session` for a direct bidi WebSocket, commonly Firefox remote debugging.
 - `BIDI_WEBDRIVER_URL=http://127.0.0.1:9516` for a WebDriver broker such as geckodriver.
 - `BIDI_BROWSER_NAME=firefox` or `BIDI_BROWSER_NAME=chrome`.
 - `BIDI_CAPABILITIES='{"moz:firefoxOptions":{"args":["-headless"]}}'` for broker-managed Firefox options.
@@ -64,7 +64,7 @@ press_key("Enter")
 scroll(500, 500, dy=600)
 ```
 
-Use DOM and raw BiDi when coordinates are the wrong tool:
+Use DOM and raw bidi when coordinates are the wrong tool:
 
 ```python
 print(js("document.title"))
@@ -86,14 +86,14 @@ Common functions:
 - `upload_file(selector, path)`
 - `http_get(url)`
 
-## BiDi-first design rules
+## bidi-first design rules
 
 - Think in `browsingContext`, `script`, `input`, `network`, and `log` modules.
 - Use raw `bidi("module.command", ...)` for anything helpers do not cover.
 - Put task-specific additions in `agent-workspace/agent_helpers.py`.
-- Use BiDi browsing context ids and script realms deliberately.
-- Do not treat BiDi as stealth. Standard WebDriver automation may expose `navigator.webdriver`.
+- Use bidi browsing context ids and script realms deliberately.
+- Do not treat bidi as stealth. Standard WebDriver automation may expose `navigator.webdriver`.
 
 ## Why this matters
 
-For agents that should survive across Firefox, Chrome, WebDriver Grid, and future browser automation infrastructure, BiDi is the protocol to build around.
+For agents that should survive across Firefox, Chrome, WebDriver Grid, and future browser automation infrastructure, bidi is the protocol to build around.

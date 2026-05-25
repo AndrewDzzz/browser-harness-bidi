@@ -1,7 +1,7 @@
 """Managed Firefox launcher for bidi-harness.
 
-This is a convenience wrapper around geckodriver + Firefox WebDriver BiDi. It
-keeps the harness BiDi-first while removing the setup tax for local use.
+This is a convenience wrapper around geckodriver + Firefox WebDriver bidi. It
+keeps the harness bidi-first while removing the setup tax for local use.
 """
 
 from __future__ import annotations
@@ -91,7 +91,7 @@ def _merge_dict(base: dict, extra: dict) -> dict:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bidi-firefox",
-        description="Run bidi-harness through a managed local geckodriver + Firefox WebDriver BiDi session.",
+        description="Run bidi-harness through a managed local geckodriver + Firefox WebDriver bidi session.",
     )
     parser.add_argument("--port", type=int, default=0, help="geckodriver port; default chooses a free port")
     parser.add_argument("--name", default=None, help="BIDI_NAME namespace for this managed session")

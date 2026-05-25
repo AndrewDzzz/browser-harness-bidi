@@ -14,7 +14,7 @@ from .helpers import *  # noqa: F403,F401
 
 HELP = """bidi-harness
 
-WebDriver BiDi browser harness. Helpers are pre-imported and the daemon auto-starts.
+WebDriver bidi browser harness. Helpers are pre-imported and the daemon auto-starts.
 
 Typical usage:
   bidi-harness <<'PY'
@@ -24,7 +24,7 @@ Typical usage:
   PY
 
 Connection:
-  Set BIDI_WS for a direct BiDi websocket, or BIDI_WEBDRIVER_URL for a WebDriver broker.
+  Set BIDI_WS for a direct bidi websocket, or BIDI_WEBDRIVER_URL for a WebDriver broker.
 
 Commands:
   bidi-harness --version   print installed version

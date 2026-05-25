@@ -1,4 +1,4 @@
-# browser-harness-BiDi installation and connection
+# browser-harness-bidi installation and connection
 
 Use this file for setup, install, and connection troubleshooting. Day-to-day usage belongs in `SKILL.md`.
 
@@ -18,9 +18,9 @@ Or, inside a development environment:
 pip install -e .
 ```
 
-## Recommended: managed Firefox BiDi
+## Recommended: managed Firefox bidi
 
-The easiest local path is `bidi-firefox`. It starts geckodriver, requests a WebDriver BiDi WebSocket, runs your harness script, then shuts the managed session down.
+The easiest local path is `bidi-firefox`. It starts geckodriver, requests a WebDriver bidi WebSocket, runs your harness script, then shuts the managed session down.
 
 ```bash
 bidi-firefox <<'PY'
@@ -61,9 +61,9 @@ This is a privacy profile, not an anti-detect profile. WebDriver automation may 
 
 ## Manual connection modes
 
-### Mode 1: direct BiDi WebSocket
+### Mode 1: direct bidi WebSocket
 
-Set `BIDI_WS` to a WebDriver BiDi WebSocket endpoint.
+Set `BIDI_WS` to a WebDriver bidi WebSocket endpoint.
 
 Firefox example:
 
@@ -72,7 +72,7 @@ firefox --remote-debugging-port 9222
 export BIDI_WS=ws://127.0.0.1:9222/session
 ```
 
-The harness will connect to the WebSocket and create a BiDi session with `session.new`.
+The harness will connect to the WebSocket and create a bidi session with `session.new`.
 
 If your `BIDI_WS` already points to an existing session WebSocket returned by a WebDriver New Session response, set:
 
@@ -82,7 +82,7 @@ export BIDI_SESSION_READY=1
 
 ### Mode 2: WebDriver broker endpoint
 
-Set `BIDI_WEBDRIVER_URL` to a WebDriver server root URL. The harness will create a classic WebDriver session with `webSocketUrl: true`, read the returned BiDi WebSocket URL, and connect to it.
+Set `BIDI_WEBDRIVER_URL` to a WebDriver server root URL. The harness will create a classic WebDriver session with `webSocketUrl: true`, read the returned bidi WebSocket URL, and connect to it.
 
 Firefox example:
 
@@ -117,10 +117,10 @@ export BIDI_DELETE_WEBDRIVER_SESSION=1
 ## Architecture
 
 ```text
-Browser / WebDriver server -> WebDriver BiDi WS -> browser_harness_bidi.daemon -> IPC -> browser_harness_bidi.run
+Browser / WebDriver server -> WebDriver bidi WS -> browser_harness_bidi.daemon -> IPC -> browser_harness_bidi.run
 ```
 
-- Protocol to the browser is WebDriver BiDi JSON over WebSocket.
+- Protocol to the browser is WebDriver bidi JSON over WebSocket.
 - Protocol between CLI and daemon is one JSON line each way.
 - IPC is an AF_UNIX socket on POSIX and TCP loopback with a token on Windows.
 - `BIDI_NAME` namespaces daemon runtime files.

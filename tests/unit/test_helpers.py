@@ -127,7 +127,7 @@ def test_domain_skills_for_url_reads_site_directory(tmp_path, monkeypatch):
     (skill_dir / "issues.md").write_text("# issues\n")
     monkeypatch.setattr(h, "AGENT_WORKSPACE", workspace)
 
-    assert h.domain_skills_for_url("https://github.com/AndrewDzzz/browser-harness-BiDi") == [
+    assert h.domain_skills_for_url("https://github.com/AndrewDzzz/browser-harness-bidi") == [
         "issues.md",
         "repo.md",
     ]

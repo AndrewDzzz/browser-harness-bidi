@@ -40,9 +40,9 @@ Avoid storing:
 - fragile pixel coordinates
 - instructions for bypassing site security, bot detection, or rate limits
 
-## BiDi style
+## bidi style
 
-Prefer browser-harness-BiDi helpers:
+Prefer browser-harness-bidi helpers:
 
 ```python
 new_tab(url)

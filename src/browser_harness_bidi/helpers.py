@@ -1,4 +1,4 @@
-"""Browser control helpers built on WebDriver BiDi.
+"""Browser control helpers built on WebDriver bidi.
 
 Core helpers live here. Agent-editable helpers live in
 BH_AGENT_WORKSPACE/agent_helpers.py.
@@ -66,7 +66,7 @@ def _send(req: dict, timeout: float | None = None) -> dict:
 
 
 def bidi(method: str, params: dict | None = None, **kwargs):
-    """Send raw WebDriver BiDi.
+    """Send raw WebDriver bidi.
 
     Example: bidi("browsingContext.getTree")
     Example: bidi("browsingContext.navigate", context=ctx, url=url, wait="complete")
@@ -526,7 +526,7 @@ def _network_capture_record(event):
 
 
 def network_events(clear=True, context=None, url_contains=None, event_prefix="network."):
-    """Return buffered BiDi network events as normalized records.
+    """Return buffered bidi network events as normalized records.
 
     This is observation-only. It does not intercept, mutate, continue, fulfill,
     or fail requests.
@@ -793,7 +793,7 @@ def capture_screenshot(path=None, full=False, max_dim=None):
 
 
 def print_pdf(path=None, **options):
-    """Print the current browsing context to PDF using WebDriver BiDi."""
+    """Print the current browsing context to PDF using WebDriver bidi."""
     path = path or str(ipc._TMP / "bidi-page.pdf")
     result = bidi("browsingContext.print", context=_current_context_id(), **options)
     data = result.get("data")

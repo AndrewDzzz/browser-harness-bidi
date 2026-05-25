@@ -2,6 +2,8 @@
 
 Use this file for setup, install, and connection troubleshooting. Day-to-day usage belongs in `SKILL.md`.
 
+Full environment-variable reference: `docs/env-vars.md`.
+
 ## Install
 
 ```bash

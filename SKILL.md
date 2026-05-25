@@ -1,6 +1,7 @@
 ---
 name: browser-harness-bidi
-description: bidi-first browser control for agents. Use when the user wants WebDriver bidi, Firefox automation, or cross-browser standard browser control.
+description: bidi-first browser control for agents. Use when the user wants WebDriver bidi, Firefox or Chrome automation, or cross-browser standard browser control.
+allowed-tools: Bash, Edit, Write, Read
 ---
 
 # browser-harness-bidi
@@ -40,11 +41,17 @@ Set one of these before using `bidi-harness` directly:
 - `BIDI_BROWSER_NAME=firefox` or `BIDI_BROWSER_NAME=chrome`.
 - `BIDI_CAPABILITIES='{"moz:firefoxOptions":{"args":["-headless"]}}'` for broker-managed Firefox options.
 
-
+For every supported environment variable, read `docs/env-vars.md`.
 
 ## Interaction skills
 
-If a browser task involves a known mechanic, read the matching file in `interaction-skills/` before inventing a new approach. Available skills include screenshots, tabs, selectors, forms, uploads, dialogs, network, storage/cookies, and viewport.
+If a browser task involves a known mechanic, read the matching file in `interaction-skills/` before inventing a new approach.
+
+Available skills:
+
+- `browser-basics.md` - page state, tabs, screenshots, selectors, viewport, and PDF capture.
+- `forms-and-input.md` - forms, text input, file uploads, and dialog handling.
+- `network-and-storage.md` - network events, network idle waits, localStorage, sessionStorage, and cookies.
 
 ## Domain skills
 

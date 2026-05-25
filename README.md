@@ -112,6 +112,11 @@ Set `BH_DOMAIN_SKILLS=1` to enable `agent-workspace/domain-skills/`. These are o
 
 Domain skills should contain durable URL patterns, selectors, page states, and workflow notes. They must not contain credentials, private data, or anti-detection guidance.
 
+## Contributors
+
+- [AndrewDzzz](https://github.com/AndrewDzzz) - project owner and maintainer.
+- Codex - implementation, documentation, and BiDi harness iteration partner.
+
 ## Contributing
 
 PRs and improvements welcome. The best way to help is to make BiDi boringly useful:

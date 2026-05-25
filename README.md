@@ -1,4 +1,4 @@
-# Browser-Harness-BiDi ♞
+# browser-harness-BiDi ♞
 
 Connect an LLM directly to a real browser with a thin, editable **WebDriver BiDi** harness.
 
@@ -27,9 +27,9 @@ When a task needs a reusable helper that does not belong in the core package, th
 Paste into Codex or Claude Code:
 
 ```text
-Set up https://github.com/AndrewDzzz/Browser-Harness-BiDi for me.
+Set up https://github.com/AndrewDzzz/browser-harness-BiDi for me.
 
-Read `install.md` and follow the steps to install Browser-Harness-BiDi and run the managed Firefox BiDi smoke test.
+Read `install.md` and follow the steps to install browser-harness-BiDi and run the managed Firefox BiDi smoke test.
 ```
 
 ## Quick start
@@ -131,4 +131,4 @@ Prefer small patches. If a helper is missing, first prove it can be expressed wi
 
 ## Upstream note
 
-Browser-Harness-BiDi is inspired by the architecture and workflow of [browser-use/browser-harness](https://github.com/browser-use/browser-harness), licensed under MIT. It reimplements the transport and helper layer around WebDriver BiDi while preserving a compatible, small-harness workflow for agents.
+browser-harness-BiDi is inspired by the architecture and workflow of [browser-use/browser-harness](https://github.com/browser-use/browser-harness), licensed under MIT. It reimplements the transport and helper layer around WebDriver BiDi while preserving a compatible, small-harness workflow for agents.

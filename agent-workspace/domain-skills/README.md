@@ -42,7 +42,7 @@ Avoid storing:
 
 ## BiDi style
 
-Prefer Browser-Harness-BiDi helpers:
+Prefer browser-harness-BiDi helpers:
 
 ```python
 new_tab(url)

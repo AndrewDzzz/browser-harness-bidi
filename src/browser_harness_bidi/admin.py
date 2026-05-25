@@ -94,7 +94,7 @@ def connection_status() -> dict:
 
 
 def run_doctor() -> int:
-    print(f"Browser-Harness-BiDi version: {_version() or 'unknown'}")
+    print(f"browser-harness-BiDi version: {_version() or 'unknown'}")
     print(f"name: {NAME}")
     print(f"runtime endpoint: {ipc.sock_addr(NAME)}")
     print(f"daemon alive: {'yes' if daemon_alive() else 'no'}")

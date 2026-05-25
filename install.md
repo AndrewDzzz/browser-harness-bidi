@@ -1,4 +1,4 @@
-# Browser-Harness-BiDi installation and connection
+# browser-harness-BiDi installation and connection
 
 Use this file for setup, install, and connection troubleshooting. Day-to-day usage belongs in `SKILL.md`.
 

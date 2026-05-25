@@ -1,6 +1,6 @@
 # Interaction skills
 
-Interaction skills are reusable browser mechanics for Browser-Harness-BiDi.
+Interaction skills are reusable browser mechanics for browser-harness-BiDi.
 
 Read these when a task starts to involve a known interaction pattern. They are intentionally BiDi-native and should describe `browsingContext`, `script`, `input`, `network`, and helper functions.
 

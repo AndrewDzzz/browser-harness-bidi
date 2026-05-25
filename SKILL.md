@@ -3,7 +3,7 @@ name: browser-harness-bidi
 description: BiDi-first browser control for agents. Use when the user wants WebDriver BiDi, Firefox automation, or cross-browser standard browser control.
 ---
 
-# Browser-Harness-BiDi
+# browser-harness-BiDi
 
 Use `bidi-harness` or the managed `bidi-firefox` launcher for WebDriver BiDi browser control.
 

@@ -55,7 +55,7 @@ Available skills:
 
 ## Domain skills
 
-Domain skills live under `agent-workspace/domain-skills/` and are disabled unless `BH_DOMAIN_SKILLS=1`. When enabled, `goto_url(url)` may return `domain_skills`; read those files before inventing a site-specific flow.
+Domain skills live under `agent-workspace/domain-skills/` and are disabled unless `BH_DOMAIN_SKILLS=1`. When enabled, `goto_url(url)` and `new_tab(url)` may return `domain_skills`; read those files before inventing a site-specific flow.
 
 Good domain skills store durable selectors, URL patterns, loaded states, and auth-wall clues. Never store credentials, private data, or anti-detection guidance.
 

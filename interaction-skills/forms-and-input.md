@@ -5,9 +5,10 @@ Use user-like bidi actions first. Use DOM reads when selectors are stable.
 ## Fill and submit
 
 ```python
-fill_input("input[name='email']", "user@example.com", timeout=10)
-fill_input("input[name='password']", "not-from-screenshot")
+fill_input("input[name='name']", "bidi user", timeout=10)
+fill_input("textarea[name='comment']", "Submitted by browser-harness-bidi")
 click_selector("button[type='submit']")
+wait_for_load(timeout=10)
 ```
 
 Keyboard submit:
@@ -15,7 +16,10 @@ Keyboard submit:
 ```python
 fill_input("input[type='search']", "webdriver bidi")
 press_key("Enter")
+wait_for_network_idle(timeout=10)
 ```
+
+After any submit action, wait for the page's real completion signal: navigation load, network idle, or a stable result selector.
 
 Read values:
 
@@ -23,7 +27,7 @@ Read values:
 print(get_value("input[name='email']"))
 ```
 
-If the page asks for credentials, stop and ask the user. Do not infer or type secrets from screenshots.
+If the page asks for credentials, stop and ask the user. Do not infer, invent, or type secrets from screenshots.
 
 ## Uploads
 

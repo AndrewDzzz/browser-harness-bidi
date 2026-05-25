@@ -10,6 +10,8 @@ for record in records:
     print(record["event"], record["method"], record["status"], record["url"])
 ```
 
+`network_events()` clears the daemon buffer by default. If you need to inspect the same events more than once, save the returned list or call `network_events(clear=False)`.
+
 Summarize by request:
 
 ```python

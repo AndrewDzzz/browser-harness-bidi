@@ -121,7 +121,7 @@ def test_cookie_helpers_parse_and_emit_cookie_js(monkeypatch):
 
 def test_domain_skills_for_url_reads_site_directory(tmp_path, monkeypatch):
     workspace = tmp_path / "agent-workspace"
-    skill_dir = workspace / "domain-skills" / "github"
+    skill_dir = workspace / "domain-skills" / "github-com"
     skill_dir.mkdir(parents=True)
     (skill_dir / "repo.md").write_text("# repo\n")
     (skill_dir / "issues.md").write_text("# issues\n")
@@ -135,7 +135,7 @@ def test_domain_skills_for_url_reads_site_directory(tmp_path, monkeypatch):
 
 def test_goto_url_surfaces_domain_skills_when_enabled(tmp_path, monkeypatch):
     workspace = tmp_path / "agent-workspace"
-    skill_dir = workspace / "domain-skills" / "example"
+    skill_dir = workspace / "domain-skills" / "example-com"
     skill_dir.mkdir(parents=True)
     (skill_dir / "basic.md").write_text("# basic\n")
     monkeypatch.setattr(h, "AGENT_WORKSPACE", workspace)

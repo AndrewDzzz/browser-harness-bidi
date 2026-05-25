@@ -22,12 +22,11 @@ capture_screenshot("/tmp/full-page.png", full=True)
 ctx = new_tab("https://example.com")
 wait_for_load()
 print(list_tabs())
-switch_tab(0)
 ensure_real_tab()
-close_tab()
+close_tab(ctx)
 ```
 
-bidi uses browsing context ids and script realms.
+bidi uses browsing context ids and script realms. Close the explicit context you opened instead of relying on whichever tab happens to be current.
 
 ## Selectors
 

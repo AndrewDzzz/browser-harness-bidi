@@ -8,17 +8,18 @@ They are disabled by default. Enable them with:
 export BH_DOMAIN_SKILLS=1
 ```
 
-When enabled, `goto_url(url)` returns up to 10 Markdown filenames found under:
+When enabled, `goto_url(url)` and `new_tab(url)` can return up to 10 Markdown filenames found under:
 
 ```text
-agent-workspace/domain-skills/<site>/
+agent-workspace/domain-skills/<hostname-slug>/
 ```
 
-The `<site>` directory is derived from the hostname by removing `www.` and taking the first domain label. For example:
+The `<hostname-slug>` directory is derived from the full hostname by removing `www.`, lowercasing it, and replacing non-alphanumeric separators with `-`. This avoids collisions between hosts such as `docs.python.org` and `docs.github.com`.
 
 ```text
-https://github.com/browser-use/browser-harness -> agent-workspace/domain-skills/github/
-https://docs.python.org/3/ -> agent-workspace/domain-skills/docs/
+https://github.com/browser-use/browser-harness -> agent-workspace/domain-skills/github-com/
+https://docs.python.org/3/ -> agent-workspace/domain-skills/docs-python-org/
+https://docs.github.com/ -> agent-workspace/domain-skills/docs-github-com/
 ```
 
 ## What belongs here

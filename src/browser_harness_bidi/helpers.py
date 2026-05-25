@@ -135,7 +135,9 @@ def new_tab(url="about:blank"):
     ctx = result["context"]
     switch_context(ctx)
     if url != "about:blank":
-        goto_url(url)
+        nav = goto_url(url)
+        if isinstance(nav, dict) and nav.get("domain_skills"):
+            return {**nav, "context": ctx}
     return ctx
 
 
@@ -179,7 +181,17 @@ def close_tab(tab=None):
 
 def _domain_skill_dir(url):
     host = urlparse(url).hostname or ""
-    site = host.removeprefix("www.").split(".")[0]
+    host = host.lower().removeprefix("www.")
+    slug = []
+    previous_dash = False
+    for ch in host:
+        if ch.isalnum():
+            slug.append(ch)
+            previous_dash = False
+        elif not previous_dash:
+            slug.append("-")
+            previous_dash = True
+    site = "".join(slug).strip("-") or "default"
     return AGENT_WORKSPACE / "domain-skills" / site
 
 

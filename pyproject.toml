@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "browser-harness-bidi"
+version = "0.2.0"
+description = "Browser-Harness-BiDi: a BiDi-first browser harness for agent-written Python."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "websockets>=15.0.1",
+  "pillow>=10",
+]
+
+[project.scripts]
+browser-harness = "browser_harness.run:main"
+browser-harness-bidi = "bidi_harness.run:main"
+bidi-harness = "bidi_harness.run:main"
+bidi-firefox = "bidi_harness.firefox:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

@@ -1,6 +1,6 @@
 ---
 name: browser-harness-bidi
-description: BiDi-first browser control for agents. Use when the user wants WebDriver BiDi, Firefox automation, cross-browser standard browser control, or a BiDi alternative to CDP browser-harness.
+description: BiDi-first browser control for agents. Use when the user wants WebDriver BiDi, Firefox automation, or cross-browser standard browser control.
 ---
 
 # Browser-Harness-BiDi
@@ -9,7 +9,7 @@ Use `bidi-harness` or the managed `bidi-firefox` launcher for WebDriver BiDi bro
 
 Compatibility note: `browser-harness` is also available in this fork and routes to the same BiDi implementation, so original Browser Harness muscle memory still works while the transport is WebDriver BiDi.
 
-BiDi is the preferred default for Firefox and the future-facing protocol for cross-browser browser agents. CDP remains useful for Chrome-only DevTools depth, but BiDi is the standard automation surface.
+BiDi is the preferred default for Firefox and the future-facing protocol for cross-browser browser agents. It is the standard automation surface this project builds around.
 
 ## Fast path
 
@@ -91,9 +91,9 @@ Common functions:
 - Think in `browsingContext`, `script`, `input`, `network`, and `log` modules.
 - Use raw `bidi("module.command", ...)` for anything helpers do not cover.
 - Put task-specific additions in `agent-workspace/agent_helpers.py`.
-- Do not assume CDP target/session semantics; BiDi uses browsing context ids and script realms.
+- Use BiDi browsing context ids and script realms deliberately.
 - Do not treat BiDi as stealth. Standard WebDriver automation may expose `navigator.webdriver`.
 
 ## Why this matters
 
-For one browser and deep Chrome internals, CDP is still sharper. For agents that should survive across Firefox, Chrome, WebDriver Grid, and future browser automation infrastructure, BiDi is the protocol to build around.
+For agents that should survive across Firefox, Chrome, WebDriver Grid, and future browser automation infrastructure, BiDi is the protocol to build around.

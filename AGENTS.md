@@ -35,4 +35,4 @@ Prefer the smallest diff that fixes the bug. Keep the core small enough for an a
 
 # Protocol stance
 
-CDP is a powerful Chromium DevTools interface. BiDi is the cross-browser WebDriver standard and the future-facing automation surface. This fork should make that future practical without pretending BiDi is stealth or anti-detect.
+BiDi is the cross-browser WebDriver standard and the future-facing automation surface. This fork should make that future practical without pretending BiDi is stealth or anti-detect.

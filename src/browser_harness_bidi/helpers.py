@@ -24,7 +24,7 @@ CORE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = CORE_DIR.parent.parent
 AGENT_WORKSPACE = Path(os.environ.get("BH_AGENT_WORKSPACE", REPO_ROOT / "agent-workspace")).expanduser()
 NAME = os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
-INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "devtools:", "edge:", "moz-extension:", "chrome-extension:")
+INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "edge:", "moz-extension:", "chrome-extension:")
 
 
 def _is_internal_url(url: str | None) -> bool:
@@ -529,7 +529,7 @@ def network_events(clear=True, context=None, url_contains=None, event_prefix="ne
     """Return buffered BiDi network events as normalized records.
 
     This is observation-only. It does not intercept, mutate, continue, fulfill,
-    or fail requests the way Chrome CDP Fetch can.
+    or fail requests.
     """
     events = drain_events() if clear else list(_send({"meta": "drain_events"})["events"])
     ctx = _context_id(context) if context is not None else None

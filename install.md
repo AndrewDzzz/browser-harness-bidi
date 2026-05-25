@@ -101,11 +101,6 @@ export BIDI_WEBDRIVER_URL=http://127.0.0.1:9515
 export BIDI_BROWSER_NAME=chrome
 ```
 
-Attach ChromeDriver to an already-running Chrome debugging port:
-
-```bash
-export BIDI_DEBUGGER_ADDRESS=127.0.0.1:9222
-```
 
 Extra capabilities can be merged with JSON:
 

@@ -1,6 +1,6 @@
 # Tabs and browsing contexts
 
-WebDriver BiDi uses browsing context ids rather than CDP target/session ids.
+WebDriver BiDi uses browsing context ids and script realms.
 
 ## New tab
 

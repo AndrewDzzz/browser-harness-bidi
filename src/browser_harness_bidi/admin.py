@@ -101,7 +101,6 @@ def run_doctor() -> int:
     print(f"BIDI_WS: {'set' if os.environ.get('BIDI_WS') else 'not set'}")
     print(f"BIDI_WEBDRIVER_URL: {os.environ.get('BIDI_WEBDRIVER_URL') or 'not set'}")
     print(f"BIDI_BROWSER_NAME: {os.environ.get('BIDI_BROWSER_NAME') or 'chrome'}")
-    print(f"BIDI_DEBUGGER_ADDRESS: {os.environ.get('BIDI_DEBUGGER_ADDRESS') or 'not set'}")
     if not (os.environ.get("BIDI_WS") or os.environ.get("BIDI_WEBDRIVER_URL") or os.environ.get("BIDI_PORT")):
         print("connection hint: set BIDI_WS, BIDI_PORT, or BIDI_WEBDRIVER_URL")
     if daemon_alive():

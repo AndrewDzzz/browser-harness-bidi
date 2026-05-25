@@ -2,7 +2,7 @@
 
 Interaction skills are reusable browser mechanics for Browser-Harness-BiDi.
 
-Read these when a task starts to involve a known interaction pattern. They are intentionally BiDi-native and should not assume CDP domains such as `Page`, `Runtime`, `Target`, or `Input.dispatchMouseEvent`.
+Read these when a task starts to involve a known interaction pattern. They are intentionally BiDi-native and should describe `browsingContext`, `script`, `input`, `network`, and helper functions.
 
 Available skills:
 

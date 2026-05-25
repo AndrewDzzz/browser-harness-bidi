@@ -2,7 +2,7 @@
 
 The daemon subscribes to common WebDriver BiDi network events when the browser supports them.
 
-This skill is observation-only. It captures request/response metadata from BiDi events. It does not intercept, mutate, continue, fulfill, or fail requests like Chrome CDP `Fetch.*` can.
+This skill is observation-only. It captures request/response metadata from BiDi events. It does not intercept, mutate, continue, fulfill, or fail requests.
 
 ## Drain recent network events
 
@@ -43,10 +43,6 @@ wait_for_load()
 wait_for_network_idle(timeout=10, idle_ms=500)
 ```
 
-## Limits versus CDP
+## Current limits
 
-BiDi network support is improving, but Chrome CDP remains stronger for deep Chrome-only interception and mutation:
-
-- CDP can intercept via `Fetch.enable`, `Fetch.continueRequest`, `Fetch.fulfillRequest`, and `Fetch.failRequest`.
-- This harness currently observes BiDi `network.*` events and groups metadata.
-- Do not claim request interception unless a future helper explicitly implements a BiDi-supported interception flow.
+This harness currently observes BiDi `network.*` events and groups metadata. Do not claim request interception unless a future helper explicitly implements a BiDi-supported interception flow.

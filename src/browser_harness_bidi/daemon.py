@@ -41,7 +41,7 @@ NAME = os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
 LOG = str(ipc.log_path(NAME))
 PID = str(ipc.pid_path(NAME))
 BUF = int(os.environ.get("BIDI_EVENT_BUFFER", "500"))
-INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "devtools:", "edge:", "moz-extension:", "chrome-extension:")
+INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "edge:", "moz-extension:", "chrome-extension:")
 
 
 def log(message: str) -> None:
@@ -68,12 +68,6 @@ def _webdriver_new_session(url: str) -> dict[str, Any]:
     base = _webdriver_base(url)
     browser_name = os.environ.get("BIDI_BROWSER_NAME", "chrome")
     always: dict[str, Any] = {"browserName": browser_name, "webSocketUrl": True}
-
-    debugger = os.environ.get("BIDI_DEBUGGER_ADDRESS")
-    if debugger:
-        lower = browser_name.lower()
-        option_key = "ms:edgeOptions" if lower in {"edge", "msedge", "microsoftedge"} else "goog:chromeOptions"
-        always[option_key] = {"debuggerAddress": debugger}
 
     if extra := os.environ.get("BIDI_CAPABILITIES"):
         always = _merge_dict(always, json.loads(extra))

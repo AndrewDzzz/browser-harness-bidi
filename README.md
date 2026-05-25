@@ -1,6 +1,6 @@
 # Browser-Harness-BiDi ♞
 
-Connect an LLM directly to a real browser with a thin, editable **WebDriver BiDi** harness. For browser tasks where you want the Browser Harness workflow, but with the cross-browser automation standard instead of a Chrome-only DevTools protocol.
+Connect an LLM directly to a real browser with a thin, editable **WebDriver BiDi** harness. For browser tasks where you want the Browser Harness workflow on the cross-browser automation standard.
 
 One WebSocket to a WebDriver BiDi browser, one tiny daemon, one editable helper workspace. The agent writes what is missing during execution. The harness improves itself every run.
 
@@ -47,16 +47,15 @@ The original `browser-use/browser-harness` proved the important shape: a browser
 
 BiDi is the future-facing layer because it is:
 
-- a W3C browser automation standard, not a Chromium-only DevTools interface;
+- a W3C browser automation standard;
 - native to modern Firefox automation and increasingly supported by Chrome tooling;
 - bidirectional by design, with command and event streams over WebSocket;
 - compatible with WebDriver infrastructure such as geckodriver, chromedriver, Selenium Grid, and cloud test providers;
 - a cleaner long-term abstraction for browser contexts, script realms, input actions, logs, and network events.
 
-CDP is still the deepest interface for Chrome-specific DevTools work. It remains excellent for tracing, profiling, coverage, request interception, and Chromium internals. The point of this fork is different:
+Browser-Harness-BiDi focuses entirely on the BiDi path:
 
 ```text
-CDP  = Chrome's powerful internal DevTools protocol
 BiDi = the cross-browser WebDriver standard for automation
 ```
 
@@ -95,7 +94,7 @@ Status as of 2026-05-25. WebDriver BiDi support moves quickly, so treat this as 
 | Browser | BiDi status | How this harness connects | Project stance |
 |---|---|---|---|
 | Firefox Desktop | First-class | `bidi-firefox`, direct `BIDI_WS=ws://127.0.0.1:PORT/session`, or `geckodriver` with `webSocketUrl=true` | Recommended default and best-tested path |
-| Chrome Desktop | Supported through ChromeDriver/WebDriver BiDi | `BIDI_WEBDRIVER_URL` + `BIDI_BROWSER_NAME=chrome`, optionally `BIDI_DEBUGGER_ADDRESS` | Supported, but CDP still has deeper Chrome-only DevTools coverage |
+| Chrome Desktop | Supported through ChromeDriver/WebDriver BiDi | `BIDI_WEBDRIVER_URL` + `BIDI_BROWSER_NAME=chrome` | Supported through the WebDriver BiDi path |
 | Chromium Desktop | Supported through Chromium/ChromeDriver-compatible WebDriver BiDi stacks | `BIDI_WEBDRIVER_URL` + `BIDI_BROWSER_NAME=chrome` or browser-specific capabilities | Expected to work when the driver returns `webSocketUrl`; less tested than Firefox |
 | Microsoft Edge Desktop | Expected via EdgeDriver/WebDriver BiDi because Edge is Chromium-based, but not verified in this repo yet | `BIDI_WEBDRIVER_URL` + `BIDI_BROWSER_NAME=edge` with Edge capabilities | Experimental until we add an Edge smoke test |
 | Safari / safaridriver | Not a supported target for this harness today | None | Track WebKit/Safari progress; do not promise support yet |
@@ -205,7 +204,7 @@ bidi-harness --version
 
 Reusable BiDi interaction notes live in `interaction-skills/`. They cover browser mechanics such as screenshots, tabs, selectors, forms, uploads, dialogs, network events, storage/cookies, and viewport/PDF work.
 
-Agents should read the relevant interaction skill before adding one-off helper code. The files are BiDi-native and should describe `browsingContext`, `script`, `input`, `network`, and helper functions rather than CDP domains.
+Agents should read the relevant interaction skill before adding one-off helper code. The files are BiDi-native and should describe `browsingContext`, `script`, `input`, `network`, and helper functions.
 
 ## Domain skills
 
@@ -237,4 +236,4 @@ Prefer small patches. If a helper is missing, first prove it can be expressed wi
 
 ## Upstream note
 
-Browser-Harness-BiDi is inspired by the architecture and workflow of [browser-use/browser-harness](https://github.com/browser-use/browser-harness), licensed under MIT. This repository does not vendor the original CDP implementation. It reimplements the transport and helper layer around WebDriver BiDi while preserving a compatible, small-harness workflow for agents.
+Browser-Harness-BiDi is inspired by the architecture and workflow of [browser-use/browser-harness](https://github.com/browser-use/browser-harness), licensed under MIT. It reimplements the transport and helper layer around WebDriver BiDi while preserving a compatible, small-harness workflow for agents.

@@ -10,7 +10,7 @@ Browser-Harness-BiDi is a thin layer that connects agents to browsers through an
 
 # Overview
 
-Core code lives in `src/bidi_harness/`:
+Core code lives in `src/browser_harness_bidi/`:
 
 - `admin.py` - daemon lifecycle and diagnostics
 - `daemon.py` - the long-lived middleman process between the browser and the agent

@@ -122,7 +122,7 @@ export BIDI_DELETE_WEBDRIVER_SESSION=1
 ## Architecture
 
 ```text
-Browser / WebDriver server -> WebDriver BiDi WS -> bidi_harness.daemon -> IPC -> bidi_harness.run
+Browser / WebDriver server -> WebDriver BiDi WS -> browser_harness_bidi.daemon -> IPC -> browser_harness_bidi.run
 ```
 
 - Protocol to the browser is WebDriver BiDi JSON over WebSocket.

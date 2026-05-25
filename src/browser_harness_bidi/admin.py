@@ -54,7 +54,7 @@ def ensure_daemon(timeout: float = 15.0) -> None:
         return
     log_file = open(ipc.log_path(NAME), "a", encoding="utf-8")
     subprocess.Popen(
-        [sys.executable, "-m", "bidi_harness.daemon"],
+        [sys.executable, "-m", "browser_harness_bidi.daemon"],
         stdin=subprocess.DEVNULL,
         stdout=log_file,
         stderr=log_file,

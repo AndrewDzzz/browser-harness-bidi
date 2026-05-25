@@ -1,6 +1,6 @@
-from bidi_harness.firefox import *  # noqa: F401,F403
+from browser_harness_bidi.firefox import *  # noqa: F401,F403
 
 if __name__ == "__main__":
-    from bidi_harness.firefox import main
+    from browser_harness_bidi.firefox import main
 
     main()

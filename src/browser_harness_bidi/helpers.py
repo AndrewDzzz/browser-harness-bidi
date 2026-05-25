@@ -532,7 +532,7 @@ def _load_agent_helpers():
     path = AGENT_WORKSPACE / "agent_helpers.py"
     if not path.exists():
         return
-    spec = importlib.util.spec_from_file_location("bidi_harness_agent_helpers", path)
+    spec = importlib.util.spec_from_file_location("browser_harness_bidi_agent_helpers", path)
     if not spec or not spec.loader:
         return
     module = importlib.util.module_from_spec(spec)

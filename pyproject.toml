@@ -15,9 +15,9 @@ dependencies = [
 
 [project.scripts]
 browser-harness = "browser_harness.run:main"
-browser-harness-bidi = "bidi_harness.run:main"
-bidi-harness = "bidi_harness.run:main"
-bidi-firefox = "bidi_harness.firefox:main"
+browser-harness-bidi = "browser_harness_bidi.run:main"
+bidi-harness = "browser_harness_bidi.run:main"
+bidi-firefox = "browser_harness_bidi.firefox:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

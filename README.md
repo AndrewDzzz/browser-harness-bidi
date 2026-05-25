@@ -20,7 +20,7 @@ This repository now keeps the original Browser Harness shape instead of being on
 
 - `src/browser_harness/` exists as a compatibility package for the original import path.
 - `browser-harness` exists as a compatibility CLI, but points at the BiDi implementation.
-- `src/bidi_harness/` contains the actual WebDriver BiDi transport, daemon, helpers, and Firefox launcher.
+- `src/browser_harness_bidi/` contains the actual WebDriver BiDi transport, daemon, helpers, and Firefox launcher.
 - `agent-workspace/` keeps the self-healing helper workflow without vendoring the original CDP implementation.
 
 So the project is intentionally: **Browser Harness, but BiDi-first**.
@@ -156,7 +156,7 @@ For a long-lived browser agent platform, the right shape is a BiDi-first interfa
 agent Python code
   -> bidi-harness helpers
   -> JSON-line IPC
-  -> bidi_harness.daemon
+  -> browser_harness_bidi.daemon
   -> WebDriver BiDi WebSocket
   -> Firefox / Chrome / WebDriver server
 ```
@@ -165,7 +165,7 @@ Core files stay intentionally small:
 
 - `install.md` for setup and connection troubleshooting.
 - `SKILL.md` for day-to-day agent usage.
-- `src/bidi_harness/` for protected core package code.
+- `src/browser_harness_bidi/` for protected core package code.
 - `agent-workspace/agent_helpers.py` for task-specific helper code the agent may edit.
 
 ## Upstream note

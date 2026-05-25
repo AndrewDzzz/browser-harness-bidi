@@ -1,6 +1,6 @@
-"""Task-specific helpers for bidi-harness.
+"""Agent-editable browser helpers.
 
-The core package imports public names from this file after defining the built-in
-helpers. Add site-specific or workflow-specific helpers here instead of growing
-`src/browser_harness_bidi/helpers.py`.
+Add task-specific browser primitives here. Core helpers from
+browser_harness_bidi.helpers load this file when BH_AGENT_WORKSPACE points at
+this directory, or when this repo's default agent-workspace exists.
 """

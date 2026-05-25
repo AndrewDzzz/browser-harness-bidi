@@ -27,6 +27,14 @@ NAME = os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
 INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "devtools:", "edge:", "moz-extension:", "chrome-extension:")
 
 
+def _is_internal_url(url: str | None) -> bool:
+    return (url or "").startswith(INTERNAL_URL_PREFIXES)
+
+
+def _context_id(context):
+    return context.get("context") if isinstance(context, dict) else context
+
+
 def _load_env_file(path: Path) -> None:
     for line in path.read_text().splitlines():
         line = line.strip()
@@ -91,8 +99,17 @@ def list_contexts(include_children=True, include_internal=True):
     contexts = bidi("browsingContext.getTree").get("contexts", [])
     out = _flatten_contexts(contexts) if include_children else contexts
     if not include_internal:
-        out = [ctx for ctx in out if not (ctx.get("url") or "").startswith(INTERNAL_URL_PREFIXES)]
+        out = [ctx for ctx in out if not _is_internal_url(ctx.get("url"))]
     return out
+
+
+def list_tabs(include_internal=False):
+    """Return top-level browsing contexts, newest browser-specific ordering preserved."""
+    return [
+        ctx
+        for ctx in list_contexts(include_children=False, include_internal=include_internal)
+        if ctx.get("parent") is None
+    ]
 
 
 def current_context():
@@ -104,7 +121,7 @@ def current_context():
 
 
 def switch_context(context):
-    ctx_id = context.get("context") if isinstance(context, dict) else context
+    ctx_id = _context_id(context)
     try:
         bidi("browsingContext.activate", context=ctx_id)
     except Exception:
@@ -122,14 +139,78 @@ def new_tab(url="about:blank"):
     return ctx
 
 
+def switch_tab(tab):
+    """Switch to a tab by context id/dict or by zero-based visible-tab index."""
+    if isinstance(tab, int):
+        tabs = list_tabs()
+        try:
+            tab = tabs[tab]
+        except IndexError as e:
+            raise RuntimeError(f"switch_tab: no visible tab at index {tab}; have {len(tabs)}") from e
+    return switch_context(tab)
+
+
+def ensure_real_tab(url="about:blank"):
+    """Attach to a non-internal top-level context, creating one if needed."""
+    current = None
+    try:
+        current = current_context()
+    except Exception:
+        pass
+    if current and not _is_internal_url(current.get("url")):
+        return current
+    tabs = list_tabs(include_internal=False)
+    if tabs:
+        switch_context(tabs[0])
+        return tabs[0]
+    ctx = new_tab(url)
+    return current_context() if url != "about:blank" else {"context": ctx, "url": url}
+
+
 def close_context(context=None):
-    ctx = context.get("context") if isinstance(context, dict) else context
+    ctx = _context_id(context)
     ctx = ctx or _current_context_id()
     return bidi("browsingContext.close", context=ctx)
 
 
+def close_tab(tab=None):
+    return close_context(tab)
+
+
+def _domain_skill_dir(url):
+    host = urlparse(url).hostname or ""
+    site = host.removeprefix("www.").split(".")[0]
+    return AGENT_WORKSPACE / "domain-skills" / site
+
+
+def domain_skills_for_url(url, limit=10):
+    d = _domain_skill_dir(url)
+    if not d.is_dir():
+        return []
+    return sorted(str(p.relative_to(d)) for p in d.rglob("*.md"))[:limit]
+
+
 def goto_url(url, wait="none"):
-    return bidi("browsingContext.navigate", context=_current_context_id(), url=url, wait=wait)
+    result = bidi("browsingContext.navigate", context=_current_context_id(), url=url, wait=wait)
+    if os.environ.get("BH_DOMAIN_SKILLS") == "1":
+        skills = domain_skills_for_url(url)
+        if skills:
+            result = {**result, "domain_skills": skills}
+    return result
+
+
+def reload(wait="none"):
+    return bidi("browsingContext.reload", context=_current_context_id(), wait=wait)
+
+
+def back(wait="complete"):
+    js("history.back()")
+    return wait_for_load() if wait else None
+
+
+def forward(wait="complete"):
+    js("history.forward()")
+    return wait_for_load() if wait else None
 
 
 def _js_snippet(expression, limit=160):
@@ -328,13 +409,27 @@ def wait_for_element(selector, timeout=10.0, visible=False):
             "if(typeof e.checkVisibility==='function')"
             "return e.checkVisibility({checkOpacity:true,checkVisibilityCSS:true});"
             "const s=getComputedStyle(e);"
-            "return s.display!=='none'&&s.visibility!=='hidden'&&s.opacity!=='0'}})()"
+            "return s.display!=='none'&&s.visibility!=='hidden'&&s.opacity!=='0'})()"
         )
     else:
         check = f"!!document.querySelector({json.dumps(selector)})"
     deadline = time.time() + timeout
     while time.time() < deadline:
         if js(check):
+            return True
+        time.sleep(0.3)
+    return False
+
+
+def wait_for_text(text, timeout=10.0, selector=None):
+    needle = json.dumps(str(text))
+    if selector:
+        expression = f"((document.querySelector({json.dumps(selector)})||{{innerText:''}}).innerText.includes({needle}))"
+    else:
+        expression = f"document.body && document.body.innerText.includes({needle})"
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if js(expression):
             return True
         time.sleep(0.3)
     return False
@@ -480,6 +575,72 @@ def fill_input(selector, text, clear_first=True, timeout=0.0):
     )
 
 
+def element_rect(selector, timeout=0.0):
+    if timeout > 0 and not wait_for_element(selector, timeout=timeout):
+        raise RuntimeError(f"element_rect: element not found: {selector!r}")
+    result = js(
+        f"(JSON.stringify((()=>{{const e=document.querySelector({json.dumps(selector)});"
+        "if(!e)return null;"
+        "const r=e.getBoundingClientRect();"
+        "return {x:r.x,y:r.y,w:r.width,h:r.height,left:r.left,top:r.top,right:r.right,bottom:r.bottom,"
+        "cx:r.x+r.width/2,cy:r.y+r.height/2};})()))"
+    )
+    rect = json.loads(result) if result else None
+    if rect is None:
+        raise RuntimeError(f"element_rect: element not found: {selector!r}")
+    return rect
+
+
+def click_selector(selector, timeout=10.0, button="left", clicks=1):
+    rect = element_rect(selector, timeout=timeout)
+    return click_at_xy(rect["cx"], rect["cy"], button=button, clicks=clicks)
+
+
+def scroll_to_element(selector, block="center", inline="center", timeout=10.0):
+    if timeout > 0 and not wait_for_element(selector, timeout=timeout):
+        raise RuntimeError(f"scroll_to_element: element not found: {selector!r}")
+    ok = js(
+        f"(()=>{{const e=document.querySelector({json.dumps(selector)});"
+        "if(!e)return false;"
+        f"e.scrollIntoView({{block:{json.dumps(block)},inline:{json.dumps(inline)}}});"
+        "return true;})()"
+    )
+    if not ok:
+        raise RuntimeError(f"scroll_to_element: element not found: {selector!r}")
+    return element_rect(selector)
+
+
+def get_text(selector=None):
+    if selector is None:
+        return js("document.body ? document.body.innerText : ''")
+    return js(f"((document.querySelector({json.dumps(selector)})||{{innerText:null}}).innerText)")
+
+
+def get_html(selector=None):
+    if selector is None:
+        return js("document.documentElement.outerHTML")
+    return js(f"((document.querySelector({json.dumps(selector)})||{{innerHTML:null}}).innerHTML)")
+
+
+def get_value(selector):
+    return js(f"((document.querySelector({json.dumps(selector)})||{{value:null}}).value)")
+
+
+def get_attr(selector, name):
+    return js(
+        f"(()=>{{const e=document.querySelector({json.dumps(selector)});"
+        f"return e?e.getAttribute({json.dumps(name)}):null;}})()"
+    )
+
+
+def count(selector):
+    return js(f"document.querySelectorAll({json.dumps(selector)}).length")
+
+
+def exists(selector):
+    return bool(js(f"!!document.querySelector({json.dumps(selector)})"))
+
+
 def capture_screenshot(path=None, full=False, max_dim=None):
     path = path or str(ipc._TMP / "bidi-shot.png")
     result = bidi(
@@ -499,6 +660,17 @@ def capture_screenshot(path=None, full=False, max_dim=None):
     return path
 
 
+def print_pdf(path=None, **options):
+    """Print the current browsing context to PDF using WebDriver BiDi."""
+    path = path or str(ipc._TMP / "bidi-page.pdf")
+    result = bidi("browsingContext.print", context=_current_context_id(), **options)
+    data = result.get("data")
+    if not data:
+        raise RuntimeError(f"print_pdf: browsingContext.print returned no data: {result}")
+    Path(path).write_bytes(base64.b64decode(data))
+    return path
+
+
 def upload_file(selector, path):
     files = [path] if isinstance(path, str) else list(path)
     files = [str(Path(p).expanduser().resolve()) for p in files]
@@ -515,6 +687,77 @@ def upload_file(selector, path):
     if not shared_id:
         raise RuntimeError(f"upload_file: no element sharedId for selector {selector!r}")
     return bidi("input.setFiles", context=_current_context_id(), element={"sharedId": shared_id}, files=files)
+
+
+def handle_prompt(accept=True, text=None):
+    prompt = _send({"meta": "pending_prompt"}).get("prompt")
+    params = {"context": _current_context_id(), "accept": bool(accept)}
+    if text is not None:
+        params["userText"] = str(text)
+    result = bidi("browsingContext.handleUserPrompt", **params)
+    return {"prompt": prompt, "result": result}
+
+
+def set_viewport(width, height, device_pixel_ratio=None):
+    params = {"context": _current_context_id(), "viewport": {"width": int(width), "height": int(height)}}
+    if device_pixel_ratio is not None:
+        params["devicePixelRatio"] = float(device_pixel_ratio)
+    return bidi("browsingContext.setViewport", **params)
+
+
+def get_local_storage():
+    return json.loads(js("JSON.stringify(Object.assign({}, localStorage))"))
+
+
+def set_local_storage(key, value):
+    js(f"localStorage.setItem({json.dumps(str(key))}, {json.dumps(str(value))})")
+
+
+def clear_local_storage():
+    js("localStorage.clear()")
+
+
+def get_session_storage():
+    return json.loads(js("JSON.stringify(Object.assign({}, sessionStorage))"))
+
+
+def set_session_storage(key, value):
+    js(f"sessionStorage.setItem({json.dumps(str(key))}, {json.dumps(str(value))})")
+
+
+def clear_session_storage():
+    js("sessionStorage.clear()")
+
+
+def get_cookie_string():
+    return js("document.cookie")
+
+
+def get_cookies():
+    raw = get_cookie_string()
+    if not raw:
+        return {}
+    out = {}
+    for item in raw.split("; "):
+        if "=" in item:
+            key, value = item.split("=", 1)
+            out[key] = value
+    return out
+
+
+def set_cookie(name, value, path="/", max_age=None, same_site=None, secure=False):
+    parts = [f"{name}={value}", f"Path={path}"]
+    if max_age is not None:
+        parts.append(f"Max-Age={int(max_age)}")
+    if same_site:
+        parts.append(f"SameSite={same_site}")
+    if secure:
+        parts.append("Secure")
+    js(f"document.cookie = {json.dumps('; '.join(parts))}")
+
+
+def clear_cookie(name, path="/"):
+    set_cookie(name, "", path=path, max_age=0)
 
 
 def http_get(url, headers=None, timeout=20.0):

@@ -40,6 +40,18 @@ Set one of these before using `bidi-harness` directly:
 - `BIDI_BROWSER_NAME=firefox` or `BIDI_BROWSER_NAME=chrome`.
 - `BIDI_CAPABILITIES='{"moz:firefoxOptions":{"args":["-headless"]}}'` for broker-managed Firefox options.
 
+
+
+## Interaction skills
+
+If a browser task involves a known mechanic, read the matching file in `interaction-skills/` before inventing a new approach. Available skills include screenshots, tabs, selectors, forms, uploads, dialogs, network, storage/cookies, and viewport.
+
+## Domain skills
+
+Domain skills live under `agent-workspace/domain-skills/` and are disabled unless `BH_DOMAIN_SKILLS=1`. When enabled, `goto_url(url)` may return `domain_skills`; read those files before inventing a site-specific flow.
+
+Good domain skills store durable selectors, URL patterns, loaded states, and auth-wall clues. Never store credentials, private data, or anti-detection guidance.
+
 ## Helpers
 
 Prefer visible, user-like actions first:

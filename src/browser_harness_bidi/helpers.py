@@ -463,6 +463,138 @@ def wait_for_network_idle(timeout=10.0, idle_ms=500):
     return False
 
 
+def _network_event_context(params):
+    request = params.get("request") if isinstance(params.get("request"), dict) else {}
+    return params.get("context") or request.get("context")
+
+
+def _network_event_request_id(params):
+    request = params.get("request") if isinstance(params.get("request"), dict) else {}
+    raw = request.get("request") or request.get("id") or params.get("request")
+    return raw if isinstance(raw, str) else None
+
+
+def _network_event_url(params):
+    request = params.get("request") if isinstance(params.get("request"), dict) else {}
+    response = params.get("response") if isinstance(params.get("response"), dict) else {}
+    return request.get("url") or response.get("url")
+
+
+def _network_event_method(params):
+    request = params.get("request") if isinstance(params.get("request"), dict) else {}
+    return request.get("method")
+
+
+def _network_event_headers(value):
+    if not value:
+        return {}
+    if isinstance(value, dict):
+        return value
+    out = {}
+    if isinstance(value, list):
+        for item in value:
+            if not isinstance(item, dict):
+                continue
+            name = item.get("name")
+            raw_value = item.get("value")
+            if isinstance(raw_value, dict):
+                raw_value = raw_value.get("value")
+            if name is not None:
+                out[str(name)] = raw_value
+    return out
+
+
+def _network_capture_record(event):
+    method = event.get("method") or ""
+    params = event.get("params") or {}
+    request = params.get("request") if isinstance(params.get("request"), dict) else {}
+    response = params.get("response") if isinstance(params.get("response"), dict) else {}
+    return {
+        "event": method,
+        "request_id": _network_event_request_id(params),
+        "context": _network_event_context(params),
+        "url": _network_event_url(params),
+        "method": _network_event_method(params),
+        "request_headers": _network_event_headers(request.get("headers")),
+        "status": response.get("status"),
+        "status_text": response.get("statusText"),
+        "response_headers": _network_event_headers(response.get("headers")),
+        "redirect_count": params.get("redirectCount"),
+        "error_text": params.get("errorText"),
+        "raw": event,
+    }
+
+
+def network_events(clear=True, context=None, url_contains=None, event_prefix="network."):
+    """Return buffered BiDi network events as normalized records.
+
+    This is observation-only. It does not intercept, mutate, continue, fulfill,
+    or fail requests the way Chrome CDP Fetch can.
+    """
+    events = drain_events() if clear else list(_send({"meta": "drain_events"})["events"])
+    ctx = _context_id(context) if context is not None else None
+    out = []
+    for event in events:
+        method = event.get("method") or ""
+        if event_prefix and not method.startswith(event_prefix):
+            continue
+        record = _network_capture_record(event)
+        if ctx and record.get("context") != ctx:
+            continue
+        if url_contains and url_contains not in (record.get("url") or ""):
+            continue
+        out.append(record)
+    return out
+
+
+def capture_network_during(action, timeout=10.0, idle_ms=500, url_contains=None, context=None):
+    """Run `action()` and return observed request/response records.
+
+    Example:
+        records = capture_network_during(lambda: goto_url("https://example.com"))
+    """
+    drain_events()
+    result = action()
+    wait_for_network_idle(timeout=timeout, idle_ms=idle_ms)
+    records = network_events(clear=True, context=context, url_contains=url_contains)
+    return {"result": result, "records": records}
+
+
+def summarize_network(records):
+    """Group normalized network records by request id."""
+    grouped = {}
+    for record in records:
+        request_id = record.get("request_id") or f"{record.get('event')}:{record.get('url')}"
+        item = grouped.setdefault(
+            request_id,
+            {
+                "request_id": record.get("request_id"),
+                "url": record.get("url"),
+                "method": record.get("method"),
+                "status": None,
+                "events": [],
+                "error_text": None,
+                "request_headers": {},
+                "response_headers": {},
+            },
+        )
+        item["events"].append(record.get("event"))
+        if record.get("url"):
+            item["url"] = record.get("url")
+        if record.get("method"):
+            item["method"] = record.get("method")
+        if record.get("status") is not None:
+            item["status"] = record.get("status")
+            item["status_text"] = record.get("status_text")
+        if record.get("error_text"):
+            item["error_text"] = record.get("error_text")
+        if record.get("request_headers"):
+            item["request_headers"].update(record.get("request_headers") or {})
+        if record.get("response_headers"):
+            item["response_headers"].update(record.get("response_headers") or {})
+    return list(grouped.values())
+
+
 _BUTTONS = {"left": 0, "middle": 1, "right": 2}
 _SPECIAL_KEYS = {
     "Backspace": "\ue003",

@@ -1,10 +1,51 @@
-# Browser-Harness-BiDi
+# Browser-Harness-BiDi ♞
 
-A BiDi-first version of the `browser-use/browser-harness` idea: one thin daemon, one JSON-line IPC channel, and a small set of helpers that an agent can call from Python.
+Connect an LLM directly to a real browser with a thin, editable **WebDriver BiDi** harness. For browser tasks where you want the Browser Harness workflow, but with the cross-browser automation standard instead of a Chrome-only DevTools protocol.
 
-The original browser-harness proved the important shape: a browser harness should be small enough for an agent to understand and editable enough for an agent to repair. This project keeps that shape, but makes **WebDriver BiDi** the center of gravity.
+One WebSocket to a WebDriver BiDi browser, one tiny daemon, one editable helper workspace. The agent writes what is missing during execution. The harness improves itself every run.
 
-BiDi is the future-facing layer here because it is:
+```text
+  * agent: wants to operate a Firefox page
+  |
+  * browser-harness-bidi -> WebDriver BiDi -> Firefox / Chrome driver
+  |
+  * agent-workspace/agent_helpers.py -> helper missing
+  |                                      + custom helper
+  |
+  ✓ task completed
+```
+
+**BiDi is not a stealth layer. It is the standard automation layer.** Standard WebDriver BiDi may expose `navigator.webdriver`. This project is about correct, future-facing browser control, not hiding automation.
+
+## Setup prompt
+
+Paste into Codex or Claude Code:
+
+```text
+Set up https://github.com/AndrewDzzz/Browser-Harness-BiDi for me.
+
+Read `install.md` and follow the steps to install Browser-Harness-BiDi and run the managed Firefox BiDi smoke test.
+```
+
+The fastest local path is managed Firefox:
+
+```bash
+uv tool install -e .
+
+bidi-firefox <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+`bidi-firefox` starts geckodriver, requests a WebDriver BiDi WebSocket, runs your script, and shuts the managed session down.
+
+## Why BiDi
+
+The original `browser-use/browser-harness` proved the important shape: a browser harness should be small enough for an agent to understand and editable enough for an agent to repair. This project keeps that shape, but makes **WebDriver BiDi** the center of gravity.
+
+BiDi is the future-facing layer because it is:
 
 - a W3C browser automation standard, not a Chromium-only DevTools interface;
 - native to modern Firefox automation and increasingly supported by Chrome tooling;
@@ -12,19 +53,40 @@ BiDi is the future-facing layer here because it is:
 - compatible with WebDriver infrastructure such as geckodriver, chromedriver, Selenium Grid, and cloud test providers;
 - a cleaner long-term abstraction for browser contexts, script realms, input actions, logs, and network events.
 
-This is not an anti-detect browser. Standard WebDriver BiDi may expose `navigator.webdriver` as required by browser automation semantics. The point is standard, cross-browser control, not hiding automation.
+CDP is still the deepest interface for Chrome-specific DevTools work. It remains excellent for tracing, profiling, coverage, request interception, and Chromium internals. The point of this fork is different:
 
-## Fork shape
+```text
+CDP  = Chrome's powerful internal DevTools protocol
+BiDi = the cross-browser WebDriver standard for automation
+```
 
-This repository now keeps the original Browser Harness shape instead of being only a separate toy wrapper:
+## Architecture (~2.4k lines including docs and tests)
 
-- `src/browser_harness/` exists as a compatibility package for the original import path.
-- `browser-harness` exists as a compatibility CLI, but points at the BiDi implementation.
-- `src/browser_harness_bidi/` contains the actual WebDriver BiDi transport, daemon, helpers, and Firefox launcher.
-- `agent-workspace/` keeps the self-healing helper workflow without vendoring the original CDP implementation.
+- `install.md` - first-time install and browser bootstrap
+- `SKILL.md` - day-to-day agent usage
+- `src/browser_harness_bidi/` - protected BiDi core package
+- `src/browser_harness/` - compatibility wrapper for the original import path and CLI
+- `agent-workspace/agent_helpers.py` - helper code the agent edits
+- `agent-workspace/domain-skills/` - optional reusable site-specific skills
+- `interaction-skills/` - reusable BiDi interaction mechanics
+- `tests/unit/` - fast unit tests for helper behavior
 
-So the project is intentionally: **Browser Harness, but BiDi-first**.
+Compatibility is intentional: `browser-harness`, `browser-harness-bidi`, `bidi-harness`, and `bidi-firefox` are all available entry points.
 
+## What actually works
+
+- Managed Firefox: `bidi-firefox <<'PY' ... PY` starts geckodriver and Firefox for you.
+- Manual BiDi: set `BIDI_WS` or `BIDI_WEBDRIVER_URL` and use `bidi-harness`.
+- Navigation: `new_tab(url)`, `goto_url(url)`, `reload()`, `back()`, `forward()`.
+- Contexts and tabs: `list_tabs()`, `switch_tab()`, `ensure_real_tab()`, `close_tab()`.
+- Screenshots: `capture_screenshot()`, full-page screenshots, max-dimension thumbnails.
+- JavaScript: `js(expression)` and raw `bidi("module.command", ...)`.
+- Input: `click_at_xy()`, `click_selector()`, `type_text()`, `press_key()`, `fill_input()`.
+- Selectors: `wait_for_element()`, `element_rect()`, `get_text()`, `get_html()`, `get_value()`, `get_attr()`, `count()`, `exists()`.
+- Storage/cookies: simple same-origin localStorage, sessionStorage, and cookie helpers.
+- Dialogs: `page_info()` surfaces pending prompts; `handle_prompt()` accepts/dismisses.
+- Viewport/PDF: `set_viewport()` and `print_pdf()` when the browser supports BiDi print.
+- Network: common BiDi network events are buffered; `network_events()`, `capture_network_during()`, `summarize_network()`, and `wait_for_network_idle()` cover request/response observation.
 
 ## Browser support
 
@@ -39,24 +101,17 @@ Status as of 2026-05-25. WebDriver BiDi support moves quickly, so treat this as 
 | Safari / safaridriver | Not a supported target for this harness today | None | Track WebKit/Safari progress; do not promise support yet |
 | Mobile browsers | Not supported by this harness today | None | Future work; likely requires Appium/cloud-provider-specific BiDi support |
 
-Important nuance:
+Important references:
 
-- MDN documents two connection shapes: `webSocketUrl=true` during WebDriver session creation, and a direct browser WebSocket; the direct command-line flow works with Firefox, while Chromium-based browsers need the Chromium BiDi wrapper path. See [MDN: Create a WebDriver BiDi connection](https://developer.mozilla.org/en-US/docs/Web/WebDriver/How_to/Create_BiDi_connection).
-- MDN documents the `webSocketUrl` capability: setting it to `true` asks the browser/driver to start a WebSocket server for WebDriver BiDi. See [MDN: webSocketUrl](https://developer.mozilla.org/en-US/docs/Web/WebDriver/Reference/Capabilities/webSocketUrl).
-- ChromeDriver officially implements both W3C WebDriver and WebDriver BiDi standards, and is available for desktop Chrome and Chrome on Android. See [ChromeDriver docs](https://developer.chrome.com/docs/chromedriver?hl=en).
-- Puppeteer documents WebDriver BiDi automation with Chrome and Firefox, but also notes Chrome still defaults to CDP because not every CDP feature is supported over BiDi yet. See [Puppeteer WebDriver BiDi support](https://pptr.dev/webdriver-bidi).
-- Safari/WebKit BiDi support is still not a project target here. WebKit has active BiDi tracking work, but this harness should not advertise Safari support until there is a stable, tested path. See [WebKit BiDi meta bug](https://www2.webkit.org/show_bug.cgi?id=281932).
+- [MDN: Create a WebDriver BiDi connection](https://developer.mozilla.org/en-US/docs/Web/WebDriver/How_to/Create_BiDi_connection)
+- [MDN: webSocketUrl capability](https://developer.mozilla.org/en-US/docs/Web/WebDriver/Reference/Capabilities/webSocketUrl)
+- [ChromeDriver docs](https://developer.chrome.com/docs/chromedriver?hl=en)
+- [Puppeteer WebDriver BiDi support](https://pptr.dev/webdriver-bidi)
+- [WebKit BiDi meta bug](https://www2.webkit.org/show_bug.cgi?id=281932)
 
-## Quick start: managed Firefox BiDi
+## Connection modes
 
-Install editable from this repo:
-
-```bash
-uv tool install -e .
-# or: pip install -e .
-```
-
-Run through a local managed geckodriver + Firefox session:
+### Managed Firefox
 
 ```bash
 bidi-firefox <<'PY'
@@ -66,44 +121,48 @@ print(page_info())
 PY
 ```
 
-Useful variants:
+Show the browser:
 
 ```bash
 bidi-firefox --headed <<'PY'
 new_tab("https://example.com")
 print(page_info())
 PY
+```
 
+Use official Firefox privacy-hardening preferences:
+
+```bash
 bidi-firefox --privacy-profile <<'PY'
 new_tab("https://example.com")
 print(js("navigator.webdriver"))
 PY
 ```
 
-`--privacy-profile` enables official Firefox privacy-hardening preferences. It does not hide WebDriver automation.
+`--privacy-profile` is a privacy profile, not an anti-detect profile.
 
-## Direct BiDi WebSocket
-
-Firefox exposes a direct BiDi endpoint when launched with remote debugging:
+### Direct Firefox BiDi WebSocket
 
 ```bash
 firefox --remote-debugging-port 9222
 export BIDI_WS=ws://127.0.0.1:9222/session
-```
 
-Then run:
-
-```bash
 bidi-harness <<'PY'
 new_tab("https://example.com")
-wait_for_load()
 print(page_info())
 PY
 ```
 
-## WebDriver broker endpoint
+### WebDriver broker endpoint
 
 Chrome and Firefox can expose a BiDi WebSocket through WebDriver by requesting `webSocketUrl: true`.
+
+```bash
+geckodriver --host 127.0.0.1 --port 9516
+export BIDI_WEBDRIVER_URL=http://127.0.0.1:9516
+export BIDI_BROWSER_NAME=firefox
+export BIDI_CAPABILITIES='{"moz:firefoxOptions":{"args":["-headless"]}}'
+```
 
 ChromeDriver example:
 
@@ -113,66 +172,27 @@ export BIDI_WEBDRIVER_URL=http://127.0.0.1:9515
 export BIDI_BROWSER_NAME=chrome
 ```
 
-GeckoDriver example:
+## Tool call shape
+
+Use heredocs for multi-line browser work. Helpers are pre-imported and the daemon auto-starts.
 
 ```bash
-geckodriver --host 127.0.0.1 --port 9516
-export BIDI_WEBDRIVER_URL=http://127.0.0.1:9516
-export BIDI_BROWSER_NAME=firefox
-export BIDI_CAPABILITIES='{"moz:firefoxOptions":{"args":["-headless"]}}'
-```
-
-To attach ChromeDriver to an already-running Chrome debugging port:
-
-```bash
-export BIDI_DEBUGGER_ADDRESS=127.0.0.1:9222
-```
-
-
-
-## Interaction skills
-
-Reusable BiDi interaction notes live in `interaction-skills/`. They cover browser mechanics such as screenshots, tabs, selectors, forms, uploads, dialogs, network events, storage/cookies, and viewport/PDF work.
-
-These files are intentionally BiDi-native. They should describe `browsingContext`, `script`, `input`, `network`, and helper functions rather than CDP domains. Agents should read the relevant interaction skill before adding one-off helper code.
-
-## Domain skills
-
-Browser-Harness-BiDi includes an optional `agent-workspace/domain-skills/` directory for site-specific playbooks. This keeps the original Browser Harness self-healing idea without vendoring CDP-specific skills.
-
-Enable domain skill hints with:
-
-```bash
-export BH_DOMAIN_SKILLS=1
-```
-
-When enabled, `goto_url(url)` returns a `domain_skills` field listing matching Markdown files for the current site, for example `agent-workspace/domain-skills/github/repository-basics.md`. Agents should read those files before inventing a site flow.
-
-Domain skills should contain durable URL patterns, selectors, page states, and workflow notes. They must not contain credentials, private data, or anti-detection guidance.
-
-## Common helpers
-
-```python
+bidi-harness <<'PY'
 new_tab("https://example.com")
-goto_url("https://example.com")
 wait_for_load()
 print(page_info())
-print(list_contexts())
-click_at_xy(120, 240)
-type_text("hello")
-press_key("Enter")
-print(js("document.title"))
-capture_screenshot("/tmp/bidi-shot.png")
+print(capture_screenshot())
+PY
 ```
 
-## Raw BiDi escape hatch
+Raw BiDi is always available:
 
 ```python
 print(bidi("browsingContext.getTree"))
 print(bidi("session.status"))
 ```
 
-## Daemon controls
+Daemon controls:
 
 ```bash
 bidi-harness --doctor
@@ -181,37 +201,40 @@ bidi-harness --reload
 bidi-harness --version
 ```
 
-## Why BiDi over CDP?
+## Interaction skills
 
-CDP is still the deepest interface for Chrome-specific DevTools work. It remains excellent for tracing, profiling, coverage, and advanced Chromium internals.
+Reusable BiDi interaction notes live in `interaction-skills/`. They cover browser mechanics such as screenshots, tabs, selectors, forms, uploads, dialogs, network events, storage/cookies, and viewport/PDF work.
 
-BiDi wins where the future matters:
+Agents should read the relevant interaction skill before adding one-off helper code. The files are BiDi-native and should describe `browsingContext`, `script`, `input`, `network`, and helper functions rather than CDP domains.
 
-```text
-CDP  = Chrome's powerful internal DevTools protocol
-BiDi = the cross-browser WebDriver standard for automation
+## Domain skills
+
+Set `BH_DOMAIN_SKILLS=1` to enable `agent-workspace/domain-skills/`. These are optional per-site playbooks surfaced by `goto_url(url)`.
+
+```bash
+export BH_DOMAIN_SKILLS=1
 ```
 
-For a long-lived browser agent platform, the right shape is a BiDi-first interface with protocol-specific backends when needed. Firefox starts naturally with BiDi; Chrome can follow through WebDriver BiDi or fall back to CDP for deep DevTools-only features.
+When enabled, `goto_url("https://github.com/AndrewDzzz/Browser-Harness-BiDi")` may return:
 
-## Architecture
-
-```text
-agent Python code
-  -> bidi-harness helpers
-  -> JSON-line IPC
-  -> browser_harness_bidi.daemon
-  -> WebDriver BiDi WebSocket
-  -> Firefox / Chrome / WebDriver server
+```python
+{"domain_skills": ["repository-basics.md"]}
 ```
 
-Core files stay intentionally small:
+Domain skills should contain durable URL patterns, selectors, page states, and workflow notes. They must not contain credentials, private data, or anti-detection guidance.
 
-- `install.md` for setup and connection troubleshooting.
-- `SKILL.md` for day-to-day agent usage.
-- `src/browser_harness_bidi/` for protected core package code.
-- `agent-workspace/agent_helpers.py` for task-specific helper code the agent may edit.
+## Contributing
+
+PRs and improvements welcome. The best way to help is to make BiDi boringly useful:
+
+- add unit tests for helper behavior under `tests/unit/`;
+- improve Firefox and ChromeDriver smoke coverage;
+- add BiDi-native interaction skills;
+- contribute small, focused domain skills under `agent-workspace/domain-skills/<site>/`;
+- keep `agent-workspace/agent_helpers.py` as the empty extension point agents edit during real tasks.
+
+Prefer small patches. If a helper is missing, first prove it can be expressed with raw `bidi("module.command", ...)`, then wrap it only if it is broadly reusable.
 
 ## Upstream note
 
-This project has been aligned with the `AndrewDzzz/Browser-Harness-BiDi` naming and BiDi-first direction. The referenced upstream currently contains only the `# Browser-Harness-BiDi` README title, so this repo provides the working implementation.
+Browser-Harness-BiDi is inspired by the architecture and workflow of [browser-use/browser-harness](https://github.com/browser-use/browser-harness), licensed under MIT. This repository does not vendor the original CDP implementation. It reimplements the transport and helper layer around WebDriver BiDi while preserving a compatible, small-harness workflow for agents.

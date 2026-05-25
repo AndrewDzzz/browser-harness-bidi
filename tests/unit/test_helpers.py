@@ -158,3 +158,125 @@ def test_goto_url_surfaces_domain_skills_when_enabled(tmp_path, monkeypatch):
             {"context": "ctx-1", "url": "https://example.com/demo", "wait": "none"},
         )
     ]
+
+
+def test_network_events_normalizes_request_and_response(monkeypatch):
+    events = [
+        {
+            "method": "network.beforeRequestSent",
+            "params": {
+                "context": "ctx-1",
+                "request": {
+                    "request": "req-1",
+                    "url": "https://example.com/api",
+                    "method": "GET",
+                    "headers": [{"name": "Accept", "value": {"type": "string", "value": "application/json"}}],
+                },
+            },
+        },
+        {
+            "method": "network.responseCompleted",
+            "params": {
+                "context": "ctx-1",
+                "request": {"request": "req-1", "url": "https://example.com/api"},
+                "response": {
+                    "url": "https://example.com/api",
+                    "status": 200,
+                    "statusText": "OK",
+                    "headers": [{"name": "Content-Type", "value": {"type": "string", "value": "application/json"}}],
+                },
+            },
+        },
+        {"method": "log.entryAdded", "params": {"text": "ignore me"}},
+    ]
+    monkeypatch.setattr(h, "drain_events", lambda: events)
+
+    records = h.network_events()
+
+    assert records == [
+        {
+            "event": "network.beforeRequestSent",
+            "request_id": "req-1",
+            "context": "ctx-1",
+            "url": "https://example.com/api",
+            "method": "GET",
+            "request_headers": {"Accept": "application/json"},
+            "status": None,
+            "status_text": None,
+            "response_headers": {},
+            "redirect_count": None,
+            "error_text": None,
+            "raw": events[0],
+        },
+        {
+            "event": "network.responseCompleted",
+            "request_id": "req-1",
+            "context": "ctx-1",
+            "url": "https://example.com/api",
+            "method": None,
+            "request_headers": {},
+            "status": 200,
+            "status_text": "OK",
+            "response_headers": {"Content-Type": "application/json"},
+            "redirect_count": None,
+            "error_text": None,
+            "raw": events[1],
+        },
+    ]
+
+
+def test_summarize_network_groups_by_request_id():
+    records = [
+        {
+            "event": "network.beforeRequestSent",
+            "request_id": "req-1",
+            "url": "https://example.com/api",
+            "method": "POST",
+            "status": None,
+            "request_headers": {"Accept": "application/json"},
+            "response_headers": {},
+            "error_text": None,
+        },
+        {
+            "event": "network.responseCompleted",
+            "request_id": "req-1",
+            "url": "https://example.com/api",
+            "method": None,
+            "status": 201,
+            "status_text": "Created",
+            "request_headers": {},
+            "response_headers": {"Content-Type": "application/json"},
+            "error_text": None,
+        },
+    ]
+
+    assert h.summarize_network(records) == [
+        {
+            "request_id": "req-1",
+            "url": "https://example.com/api",
+            "method": "POST",
+            "status": 201,
+            "status_text": "Created",
+            "events": ["network.beforeRequestSent", "network.responseCompleted"],
+            "error_text": None,
+            "request_headers": {"Accept": "application/json"},
+            "response_headers": {"Content-Type": "application/json"},
+        }
+    ]
+
+
+def test_capture_network_during_runs_action_and_collects(monkeypatch):
+    calls = []
+
+    def fake_drain():
+        calls.append("drain")
+        return []
+
+    monkeypatch.setattr(h, "drain_events", fake_drain)
+    monkeypatch.setattr(h, "wait_for_network_idle", lambda timeout, idle_ms: calls.append(("idle", timeout, idle_ms)))
+    monkeypatch.setattr(h, "network_events", lambda clear, context, url_contains: [{"url": "https://example.com"}])
+
+    result = h.capture_network_during(lambda: "done", timeout=3, idle_ms=100, url_contains="example", context="ctx")
+
+    assert result == {"result": "done", "records": [{"url": "https://example.com"}]}
+    assert calls == ["drain", ("idle", 3, 100)]

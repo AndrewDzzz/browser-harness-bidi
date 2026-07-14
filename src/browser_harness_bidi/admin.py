@@ -14,7 +14,9 @@ from pathlib import Path
 
 from . import _ipc as ipc
 
-NAME = os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
+
+def _name() -> str:
+    return os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
 
 
 def _version() -> str | None:
@@ -31,18 +33,18 @@ def _version() -> str | None:
 
 def _log_tail(name: str | None = None) -> str | None:
     try:
-        lines = ipc.log_path(name or NAME).read_text(encoding="utf-8", errors="replace").strip().splitlines()
+        lines = ipc.log_path(name or _name()).read_text(encoding="utf-8", errors="replace").strip().splitlines()
         return lines[-1] if lines else None
     except FileNotFoundError:
         return None
 
 
 def daemon_alive(name: str | None = None) -> bool:
-    return ipc.ping(name or NAME, timeout=1.0)
+    return ipc.ping(name or _name(), timeout=1.0)
 
 
-def _daemon_request(req: dict, timeout: float = 5.0) -> dict:
-    c, token = ipc.connect(NAME, timeout=timeout)
+def _daemon_request(req: dict, timeout: float = 5.0, name: str | None = None) -> dict:
+    c, token = ipc.connect(name or _name(), timeout=timeout)
     try:
         return ipc.request(c, token, req)
     finally:
@@ -50,9 +52,10 @@ def _daemon_request(req: dict, timeout: float = 5.0) -> dict:
 
 
 def ensure_daemon(timeout: float = 15.0) -> None:
-    if daemon_alive():
+    name = _name()
+    if daemon_alive(name):
         return
-    log_file = open(ipc.log_path(NAME), "a", encoding="utf-8")
+    log_file = open(ipc.log_path(name), "a", encoding="utf-8")
     subprocess.Popen(
         [sys.executable, "-m", "browser_harness_bidi.daemon"],
         stdin=subprocess.DEVNULL,
@@ -63,25 +66,26 @@ def ensure_daemon(timeout: float = 15.0) -> None:
     )
     deadline = time.time() + timeout
     while time.time() < deadline:
-        if daemon_alive():
+        if daemon_alive(name):
             return
         time.sleep(0.2)
-    tail = _log_tail()
+    tail = _log_tail(name)
     suffix = f" Last log line: {tail}" if tail else ""
     raise RuntimeError(f"bidi-harness daemon did not start within {timeout:.0f}s.{suffix}")
 
 
 def restart_daemon() -> None:
-    if daemon_alive():
+    name = _name()
+    if daemon_alive(name):
         try:
-            _daemon_request({"meta": "shutdown"}, timeout=2.0)
+            _daemon_request({"meta": "shutdown"}, timeout=2.0, name=name)
         except Exception:
             pass
         for _ in range(30):
-            if not daemon_alive():
+            if not daemon_alive(name):
                 return
             time.sleep(0.1)
-    pid = ipc.identify(NAME, timeout=0.5)
+    pid = ipc.identify(name, timeout=0.5)
     if pid:
         try:
             os.kill(pid, signal.SIGTERM)
@@ -94,19 +98,20 @@ def connection_status() -> dict:
 
 
 def run_doctor() -> int:
+    name = _name()
     print(f"browser-harness-bidi version: {_version() or 'unknown'}")
-    print(f"name: {NAME}")
-    print(f"runtime endpoint: {ipc.sock_addr(NAME)}")
-    print(f"daemon alive: {'yes' if daemon_alive() else 'no'}")
+    print(f"name: {name}")
+    print(f"runtime endpoint: {ipc.sock_addr(name)}")
+    print(f"daemon alive: {'yes' if daemon_alive(name) else 'no'}")
     print(f"BIDI_WS: {'set' if os.environ.get('BIDI_WS') else 'not set'}")
     print(f"BIDI_WEBDRIVER_URL: {os.environ.get('BIDI_WEBDRIVER_URL') or 'not set'}")
     print(f"BIDI_BROWSER_NAME: {os.environ.get('BIDI_BROWSER_NAME') or 'chrome'}")
     if not (os.environ.get("BIDI_WS") or os.environ.get("BIDI_WEBDRIVER_URL") or os.environ.get("BIDI_PORT")):
         print("connection hint: set BIDI_WS, BIDI_PORT, or BIDI_WEBDRIVER_URL")
-    if daemon_alive():
+    if daemon_alive(name):
         status = connection_status()
         print("connection status:")
         print(json.dumps(status, indent=2, default=str))
-    elif tail := _log_tail():
+    elif tail := _log_tail(name):
         print(f"last log line: {tail}")
     return 0

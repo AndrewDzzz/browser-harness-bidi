@@ -44,6 +44,10 @@ BUF = int(os.environ.get("BIDI_EVENT_BUFFER", "500"))
 INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "edge:", "moz-extension:", "chrome-extension:")
 
 
+def _truthy_env(*names: str) -> bool:
+    return any(os.environ.get(name, "").lower() in {"1", "true", "yes", "on"} for name in names)
+
+
 def log(message: str) -> None:
     with open(LOG, "a", encoding="utf-8") as f:
         f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {message}\n")
@@ -191,8 +195,9 @@ class Daemon:
             "browsingContext.fragmentNavigated",
             "browsingContext.userPromptOpened",
             "browsingContext.userPromptClosed",
-            "log.entryAdded",
         ]
+        if _truthy_env("BIDI_SUBSCRIBE_LOG", "BH_SUBSCRIBE_LOG"):
+            core_events.append("log.entryAdded")
         network_events = [
             "network.beforeRequestSent",
             "network.responseStarted",
@@ -246,11 +251,15 @@ class Daemon:
             out = list(self.events)
             self.events.clear()
             return {"events": out}
+        if meta == "peek_events":
+            return {"events": list(self.events)}
         if meta == "current_context":
             return {"context": self.context}
         if meta == "set_context":
             self.context = req.get("context") or self.context
             return {"context": self.context}
+        if meta == "attach_first_context":
+            return await self.attach_first_context()
         if meta == "pending_prompt":
             return {"prompt": self.prompt}
         if meta == "connection_status":

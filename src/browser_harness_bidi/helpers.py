@@ -23,8 +23,11 @@ from . import _ipc as ipc
 CORE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = CORE_DIR.parent.parent
 AGENT_WORKSPACE = Path(os.environ.get("BH_AGENT_WORKSPACE", REPO_ROOT / "agent-workspace")).expanduser()
-NAME = os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
 INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "edge:", "moz-extension:", "chrome-extension:")
+
+
+def _name() -> str:
+    return os.environ.get("BIDI_NAME") or os.environ.get("BU_NAME", "default")
 
 
 def _is_internal_url(url: str | None) -> bool:
@@ -55,7 +58,7 @@ _load_env()
 
 def _send(req: dict, timeout: float | None = None) -> dict:
     timeout = timeout or float(os.environ.get("BIDI_IPC_TIMEOUT", "60"))
-    c, token = ipc.connect(NAME, timeout=timeout)
+    c, token = ipc.connect(_name(), timeout=timeout)
     try:
         response = ipc.request(c, token, req)
     finally:
@@ -78,6 +81,10 @@ def bidi(method: str, params: dict | None = None, **kwargs):
 
 def drain_events():
     return _send({"meta": "drain_events"})["events"]
+
+
+def peek_events():
+    return _send({"meta": "peek_events"})["events"]
 
 
 def _current_context_id() -> str:
@@ -172,7 +179,14 @@ def ensure_real_tab(url="about:blank"):
 def close_context(context=None):
     ctx = _context_id(context)
     ctx = ctx or _current_context_id()
-    return bidi("browsingContext.close", context=ctx)
+    try:
+        current = _current_context_id()
+    except Exception:
+        current = None
+    result = bidi("browsingContext.close", context=ctx)
+    if current == ctx:
+        _send({"meta": "attach_first_context"})
+    return result
 
 
 def close_tab(tab=None):
@@ -543,7 +557,7 @@ def network_events(clear=True, context=None, url_contains=None, event_prefix="ne
     This is observation-only. It does not intercept, mutate, continue, fulfill,
     or fail requests.
     """
-    events = drain_events() if clear else list(_send({"meta": "drain_events"})["events"])
+    events = drain_events() if clear else peek_events()
     ctx = _context_id(context) if context is not None else None
     out = []
     for event in events:

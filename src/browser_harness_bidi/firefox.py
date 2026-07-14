@@ -18,9 +18,6 @@ import time
 import urllib.request
 from pathlib import Path
 
-from .admin import restart_daemon
-from .run import main as harness_main
-
 
 def _free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -138,6 +135,8 @@ def main() -> None:
     old_env = os.environ.copy()
     os.environ.update(env)
     try:
+        from .run import main as harness_main
+
         _wait_for_driver(port)
         if args.doctor:
             sys.argv = ["bidi-harness", "--doctor"]
@@ -147,6 +146,8 @@ def main() -> None:
     finally:
         if not args.keep_daemon:
             try:
+                from .admin import restart_daemon
+
                 restart_daemon()
             except Exception:
                 pass

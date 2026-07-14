@@ -225,6 +225,33 @@ def test_network_events_normalizes_request_and_response(monkeypatch):
     ]
 
 
+def test_network_events_clear_false_peeks_without_draining(monkeypatch):
+    events = [
+        {
+            "method": "network.beforeRequestSent",
+            "params": {
+                "context": "ctx-1",
+                "request": {"request": "req-1", "url": "https://example.com/", "method": "GET"},
+            },
+        }
+    ]
+    calls = []
+
+    def fake_drain():
+        calls.append("drain")
+        return []
+
+    def fake_peek():
+        calls.append("peek")
+        return events
+
+    monkeypatch.setattr(h, "drain_events", fake_drain)
+    monkeypatch.setattr(h, "peek_events", fake_peek)
+
+    assert h.network_events(clear=False)[0]["request_id"] == "req-1"
+    assert calls == ["peek"]
+
+
 def test_summarize_network_groups_by_request_id():
     records = [
         {
@@ -280,3 +307,41 @@ def test_capture_network_during_runs_action_and_collects(monkeypatch):
 
     assert result == {"result": "done", "records": [{"url": "https://example.com"}]}
     assert calls == ["drain", ("idle", 3, 100)]
+
+
+def test_close_context_reattaches_when_closing_current(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(h, "_current_context_id", lambda: "ctx-1")
+
+    def fake_bidi(method, **params):
+        calls.append(("bidi", method, params))
+        return {"closed": params["context"]}
+
+    def fake_send(req):
+        calls.append(("send", req))
+        return {"context": "ctx-2"}
+
+    monkeypatch.setattr(h, "bidi", fake_bidi)
+    monkeypatch.setattr(h, "_send", fake_send)
+
+    assert h.close_context() == {"closed": "ctx-1"}
+    assert calls == [
+        ("bidi", "browsingContext.close", {"context": "ctx-1"}),
+        ("send", {"meta": "attach_first_context"}),
+    ]
+
+
+def test_close_context_does_not_reattach_when_closing_other_context(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(h, "_current_context_id", lambda: "ctx-1")
+    monkeypatch.setattr(
+        h,
+        "bidi",
+        lambda method, **params: calls.append(("bidi", method, params)) or {"closed": params["context"]},
+    )
+    monkeypatch.setattr(h, "_send", lambda req: calls.append(("send", req)) or {"context": "ctx-2"})
+
+    assert h.close_context("ctx-2") == {"closed": "ctx-2"}
+    assert calls == [("bidi", "browsingContext.close", {"context": "ctx-2"})]

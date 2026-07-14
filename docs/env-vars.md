@@ -21,6 +21,7 @@ This project keeps the public command surface small, but the daemon reads a few 
 - `BU_NAME` - compatibility alias for `BIDI_NAME`.
 - `BIDI_EVENT_BUFFER` - maximum number of browser events kept in the daemon event buffer. Defaults to `500`.
 - `BIDI_IPC_TIMEOUT` - helper-to-daemon IPC timeout in seconds. Defaults to `60`.
+- `BIDI_SUBSCRIBE_LOG` / `BH_SUBSCRIBE_LOG` - set to `1` to subscribe to `log.entryAdded` by default. This is off by default because log subscription can affect page-observable console/runtime behavior in some browsers.
 - `BIDI_RUNTIME_DIR` - directory for daemon runtime socket files.
 - `BH_RUNTIME_DIR` - compatibility alias for `BIDI_RUNTIME_DIR`.
 - `BIDI_TMP_DIR` - directory for temporary IPC files.

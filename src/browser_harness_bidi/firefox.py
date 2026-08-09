@@ -135,14 +135,19 @@ def main() -> None:
     old_env = os.environ.copy()
     os.environ.update(env)
     try:
-        from .run import main as harness_main
-
         _wait_for_driver(port)
         if args.doctor:
-            sys.argv = ["bidi-harness", "--doctor"]
+            from .admin import ensure_daemon, run_doctor
+
+            ensure_daemon()
+            code = run_doctor()
+            if code:
+                raise SystemExit(code)
         else:
+            from .run import main as harness_main
+
             sys.argv = ["bidi-harness"]
-        harness_main()
+            harness_main()
     finally:
         if not args.keep_daemon:
             try:

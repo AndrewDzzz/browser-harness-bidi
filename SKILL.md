@@ -6,7 +6,7 @@ allowed-tools: Bash, Edit, Write, Read
 
 # browser-harness-bidi
 
-Use `bidi-harness` or the managed `bidi-firefox` launcher for WebDriver bidi browser control.
+Use `bidi-harness` or the managed `bidi-firefox` / `bidi-chrome` launchers for WebDriver bidi browser control.
 
 Compatibility note: `browser-harness` is also available in this fork and routes to the same bidi implementation, so original Browser Harness muscle memory still works while the transport is WebDriver bidi.
 
@@ -24,6 +24,18 @@ PY
 
 `bidi-firefox` starts geckodriver, requests a WebDriver bidi WebSocket, runs the harness script, and cleans up the managed browser session.
 
+For Chrome through ChromeDriver:
+
+```bash
+bidi-chrome <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+`bidi-chrome` starts chromedriver, requests a Chrome WebDriver bidi WebSocket, runs the harness script, and cleans up the managed browser session.
+
 ## Manual harness path
 
 ```bash
@@ -40,6 +52,7 @@ Set one of these before using `bidi-harness` directly:
 - `BIDI_WEBDRIVER_URL=http://127.0.0.1:9516` for a WebDriver broker such as geckodriver.
 - `BIDI_BROWSER_NAME=firefox` or `BIDI_BROWSER_NAME=chrome`.
 - `BIDI_CAPABILITIES='{"moz:firefoxOptions":{"args":["-headless"]}}'` for broker-managed Firefox options.
+- `BIDI_CAPABILITIES='{"goog:chromeOptions":{"args":["--headless=new"]}}'` for broker-managed Chrome options.
 
 For every supported environment variable, read `docs/env-vars.md`.
 

@@ -12,6 +12,7 @@ command -v browser-harness
 command -v browser-harness-bidi
 command -v bidi-harness
 command -v bidi-firefox
+command -v bidi-chrome
 ```
 
 Or, inside a development environment:
@@ -60,6 +61,48 @@ PY
 ```
 
 This is a privacy profile, not an anti-detect profile. WebDriver automation may still be visible to pages.
+
+## Managed Chrome bidi
+
+Use `bidi-chrome` when you want the same harness helpers through ChromeDriver. It starts chromedriver, asks it for a WebDriver BiDi `webSocketUrl`, then connects the daemon to that socket.
+
+```bash
+bidi-chrome <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+Show the browser:
+
+```bash
+bidi-chrome --headed <<'PY'
+new_tab("https://example.com")
+print(page_info())
+PY
+```
+
+Use a specific Chrome binary or profile:
+
+```bash
+bidi-chrome \
+  --chrome-binary "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --user-data-dir "$HOME/chrome-bidi-profile" \
+  --profile-directory "Default" <<'PY'
+print(page_info())
+PY
+```
+
+Attach ChromeDriver to an already-running Chrome debug address:
+
+```bash
+bidi-chrome --debugger-address 127.0.0.1:9222 <<'PY'
+print(list_tabs())
+PY
+```
+
+This is the standard ChromeDriver/WebDriver BiDi route, not a CDP stealth route. ChromeDriver must be installed and compatible with the Chrome version you launch.
 
 ## Manual connection modes
 

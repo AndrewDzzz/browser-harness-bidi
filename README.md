@@ -46,6 +46,18 @@ PY
 
 `bidi-firefox` starts geckodriver, requests a WebDriver bidi WebSocket, runs your script, and shuts the managed session down.
 
+Chrome can use the same helper surface through ChromeDriver:
+
+```bash
+bidi-chrome <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+`bidi-chrome` starts chromedriver, requests a Chrome WebDriver bidi WebSocket, runs your script, and shuts the managed session down.
+
 ## Why bidi
 
 The original `browser-use/browser-harness` proved the important shape: a browser harness should be small enough for an agent to understand and editable enough for an agent to repair. This project keeps that shape, but makes **WebDriver bidi** the center of gravity.
@@ -78,6 +90,7 @@ More detail: [docs/architecture.md](docs/architecture.md)
 ## What actually works
 
 - Managed Firefox: `bidi-firefox <<'PY' ... PY` starts geckodriver and Firefox for you.
+- Managed Chrome: `bidi-chrome <<'PY' ... PY` starts chromedriver and Chrome for you.
 - Manual bidi: set `BIDI_WS` or `BIDI_WEBDRIVER_URL` and use `bidi-harness`.
 - Navigation and tabs: `new_tab()`, `goto_url()`, `reload()`, `list_tabs()`, `switch_tab()`, `ensure_real_tab()`.
 - Screenshots and PDFs: `capture_screenshot()`, `print_pdf()`.

@@ -30,6 +30,43 @@ PY
 
 `--privacy-profile` is a privacy profile, not an anti-detect profile.
 
+## Managed Chrome
+
+```bash
+bidi-chrome <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+Show the browser:
+
+```bash
+bidi-chrome --headed <<'PY'
+new_tab("https://example.com")
+print(page_info())
+PY
+```
+
+Use a specific Chrome binary or user data directory:
+
+```bash
+bidi-chrome \
+  --chrome-binary "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --user-data-dir "$HOME/chrome-bidi-profile" <<'PY'
+print(page_info())
+PY
+```
+
+Attach ChromeDriver to an existing Chrome debug endpoint:
+
+```bash
+bidi-chrome --debugger-address 127.0.0.1:9222 <<'PY'
+print(list_tabs())
+PY
+```
+
 ## Direct Firefox bidi WebSocket
 
 ```bash

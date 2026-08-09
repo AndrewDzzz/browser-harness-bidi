@@ -6,7 +6,7 @@ allowed-tools: Bash, Edit, Write, Read
 
 # browser-harness-bidi
 
-Use `bidi-harness` or the managed `bidi-firefox` / `bidi-chrome` launchers for WebDriver bidi browser control.
+Use `bidi-harness` or the managed `bidi-firefox` / `bidi-ruyi-firefox` / `bidi-chrome` launchers for WebDriver bidi browser control.
 
 Compatibility note: `browser-harness` is also available in this fork and routes to the same bidi implementation, so original Browser Harness muscle memory still works while the transport is WebDriver bidi.
 
@@ -23,6 +23,18 @@ PY
 ```
 
 `bidi-firefox` starts geckodriver, requests a WebDriver bidi WebSocket, runs the harness script, and cleans up the managed browser session.
+
+For ruyiPage's Firefox runtime or a Firefox-compatible fingerprint browser:
+
+```bash
+bidi-ruyi-firefox --browser-path /path/to/firefox --fpfile /path/to/fpfile.txt <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+`bidi-ruyi-firefox` starts Firefox directly with `--remote-debugging-port` and connects to the direct Firefox BiDi socket. It can also attach to an already-open endpoint with `--existing-address 127.0.0.1:12000`, as long as that endpoint can create a new BiDi session.
 
 For Chrome through ChromeDriver:
 

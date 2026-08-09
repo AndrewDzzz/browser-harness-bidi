@@ -24,6 +24,7 @@ browser-harness-bidi = "browser_harness_bidi.run:main"
 bidi-harness = "browser_harness_bidi.run:main"
 bidi-firefox = "browser_harness_bidi.firefox:main"
 bidi-chrome = "browser_harness_bidi.chrome:main"
+bidi-ruyi-firefox = "browser_harness_bidi.ruyi_firefox:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -12,6 +12,7 @@ command -v browser-harness
 command -v browser-harness-bidi
 command -v bidi-harness
 command -v bidi-firefox
+command -v bidi-ruyi-firefox
 command -v bidi-chrome
 ```
 
@@ -61,6 +62,39 @@ PY
 ```
 
 This is a privacy profile, not an anti-detect profile. WebDriver automation may still be visible to pages.
+
+## ruyiPage-compatible Firefox bidi
+
+Use `bidi-ruyi-firefox` when you want to run the harness against ruyiPage's Firefox runtime or a Firefox-compatible fingerprint browser that exposes Firefox Remote Agent / WebDriver BiDi directly.
+
+```bash
+bidi-ruyi-firefox --browser-path /path/to/firefox <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+With a ruyiPage/firefox-fingerprintBrowser fpfile:
+
+```bash
+bidi-ruyi-firefox \
+  --browser-path /path/to/firefox \
+  --user-dir "$HOME/ruyi-bidi-profile" \
+  --fpfile "$HOME/fpfile.txt" <<'PY'
+print(page_info())
+PY
+```
+
+Attach to an already-open Firefox Remote Agent endpoint:
+
+```bash
+bidi-ruyi-firefox --existing-address 127.0.0.1:12000 <<'PY'
+print(list_tabs())
+PY
+```
+
+If another ruyiPage process already owns the active BiDi session, the attach flow may fail during `session.new`. In that case, start a separate browser with `bidi-ruyi-firefox` or close the owning driver first.
 
 ## Managed Chrome bidi
 

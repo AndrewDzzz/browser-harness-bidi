@@ -46,6 +46,18 @@ PY
 
 `bidi-firefox` starts geckodriver, requests a WebDriver bidi WebSocket, runs your script, and shuts the managed session down.
 
+If you use ruyiPage's Firefox runtime or a Firefox-compatible fingerprint browser, use the direct Firefox Remote Agent path:
+
+```bash
+bidi-ruyi-firefox --browser-path /path/to/firefox --fpfile /path/to/fpfile.txt <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+`bidi-ruyi-firefox` starts Firefox with `--remote-debugging-port`, resolves the direct WebDriver BiDi socket, runs your script, and shuts the managed browser down.
+
 Chrome can use the same helper surface through ChromeDriver:
 
 ```bash
@@ -90,6 +102,7 @@ More detail: [docs/architecture.md](docs/architecture.md)
 ## What actually works
 
 - Managed Firefox: `bidi-firefox <<'PY' ... PY` starts geckodriver and Firefox for you.
+- ruyiPage-compatible Firefox: `bidi-ruyi-firefox <<'PY' ... PY` starts or attaches to a direct Firefox BiDi endpoint.
 - Managed Chrome: `bidi-chrome <<'PY' ... PY` starts chromedriver and Chrome for you.
 - Manual bidi: set `BIDI_WS` or `BIDI_WEBDRIVER_URL` and use `bidi-harness`.
 - Navigation and tabs: `new_tab()`, `goto_url()`, `reload()`, `list_tabs()`, `switch_tab()`, `ensure_real_tab()`.

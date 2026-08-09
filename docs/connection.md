@@ -30,6 +30,39 @@ PY
 
 `--privacy-profile` is a privacy profile, not an anti-detect profile.
 
+## ruyiPage-Compatible Firefox
+
+Start a direct Firefox Remote Agent / WebDriver BiDi session:
+
+```bash
+bidi-ruyi-firefox --browser-path /path/to/firefox <<'PY'
+new_tab("https://example.com")
+wait_for_load()
+print(page_info())
+PY
+```
+
+Use a ruyiPage/firefox-fingerprintBrowser fpfile:
+
+```bash
+bidi-ruyi-firefox \
+  --browser-path /path/to/firefox \
+  --user-dir "$HOME/ruyi-bidi-profile" \
+  --fpfile "$HOME/fpfile.txt" <<'PY'
+print(page_info())
+PY
+```
+
+Attach to an existing Firefox Remote Agent endpoint:
+
+```bash
+bidi-ruyi-firefox --existing-address 127.0.0.1:12000 <<'PY'
+print(list_tabs())
+PY
+```
+
+Existing ruyiPage-controlled browsers can reject a second `session.new` if another process already owns the active BiDi session.
+
 ## Managed Chrome
 
 ```bash

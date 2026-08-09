@@ -17,6 +17,14 @@ def test_has_return_statement_ignores_inner_function_return():
     assert h._has_return_statement(expression) is False
 
 
+def test_about_blank_is_usable_while_other_about_pages_are_internal():
+    assert h._is_internal_url("about:blank") is False
+    assert h._is_internal_url("about:blank#section") is False
+    assert h._is_internal_url("ABOUT:BLANK?x=1") is False
+    assert h._is_internal_url("about:config") is True
+    assert h._is_internal_url("chrome://settings") is True
+
+
 def test_remote_value_decodes_primitives_and_nested_values():
     value = {
         "type": "object",

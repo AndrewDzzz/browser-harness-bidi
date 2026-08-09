@@ -24,6 +24,7 @@ CORE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = CORE_DIR.parent.parent
 AGENT_WORKSPACE = Path(os.environ.get("BH_AGENT_WORKSPACE", REPO_ROOT / "agent-workspace")).expanduser()
 INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "edge:", "moz-extension:", "chrome-extension:")
+USABLE_ABOUT_URLS = {"about:blank"}
 
 
 def _name() -> str:
@@ -31,7 +32,11 @@ def _name() -> str:
 
 
 def _is_internal_url(url: str | None) -> bool:
-    return (url or "").startswith(INTERNAL_URL_PREFIXES)
+    normalized = (url or "").strip().lower()
+    base = normalized.split("#", 1)[0].split("?", 1)[0]
+    if base in USABLE_ABOUT_URLS:
+        return False
+    return normalized.startswith(INTERNAL_URL_PREFIXES)
 
 
 def _context_id(context):

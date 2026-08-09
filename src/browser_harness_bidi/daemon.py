@@ -42,6 +42,7 @@ LOG = str(ipc.log_path(NAME))
 PID = str(ipc.pid_path(NAME))
 BUF = int(os.environ.get("BIDI_EVENT_BUFFER", "500"))
 INTERNAL_URL_PREFIXES = ("about:", "chrome:", "chrome-untrusted:", "edge:", "moz-extension:", "chrome-extension:")
+USABLE_ABOUT_URLS = {"about:blank"}
 
 
 def _truthy_env(*names: str) -> bool:
@@ -134,8 +135,15 @@ def _flatten_contexts(contexts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _is_real_context(ctx: dict[str, Any]) -> bool:
-    url = ctx.get("url") or ""
-    return not url.startswith(INTERNAL_URL_PREFIXES)
+    return not _is_internal_url(ctx.get("url"))
+
+
+def _is_internal_url(url: str | None) -> bool:
+    normalized = (url or "").strip().lower()
+    base = normalized.split("#", 1)[0].split("?", 1)[0]
+    if base in USABLE_ABOUT_URLS:
+        return False
+    return normalized.startswith(INTERNAL_URL_PREFIXES)
 
 
 class Daemon:
